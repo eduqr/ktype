@@ -14,7 +14,7 @@ func Setup(logsEnable bool) *slog.Logger {
 	} else {
 		logOutput = io.Discard
 	}
-	
+
 	jsonHandler := slog.NewJSONHandler(logOutput, nil)
 	logger := slog.New(jsonHandler)
 	return logger
