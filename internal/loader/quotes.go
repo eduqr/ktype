@@ -1,4 +1,4 @@
-package typer
+package loader
 
 import (
 	"embed"
