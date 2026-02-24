@@ -4,6 +4,8 @@ import (
 	"github.com/eduqr/ktype/internal/config"
 	"github.com/eduqr/ktype/internal/loader"
 	"github.com/eduqr/ktype/internal/logger"
+	"github.com/eduqr/ktype/internal/typer"
+	"github.com/eduqr/ktype/internal/ui"
 )
 
 func main() {
@@ -19,4 +21,16 @@ func main() {
 	}
 
 	log.Info("Generated challenge", "count", len(challenge), "challenge", challenge)
+
+	screen, err := ui.InitScreen()
+	if err != nil {
+		log.Error("Failed to initialize screen", "error", err)
+		return
+	}
+	defer screen.Fini()
+
+	ui.DrawChallenge(screen, challenge, ui.SetupStyles())
+
+	typer.StartGame(screen, challenge)
+
 }
