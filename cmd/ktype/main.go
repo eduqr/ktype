@@ -29,8 +29,11 @@ func main() {
 	}
 	defer screen.Fini()
 
-	ui.DrawChallenge(screen, challenge, ui.SetupStyles())
+	w, h := screen.Size()
+	cells := typer.BuildCells(challenge, 0, 1, w, h)
 
-	typer.StartGame(screen, challenge)
+	ui.DrawChallenge(screen, cells, ui.SetupStyles())
 
+	gameState := typer.InitGameState(cells)
+	typer.StartGame(screen, gameState)
 }
