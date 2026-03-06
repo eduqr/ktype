@@ -10,11 +10,12 @@ import (
 )
 
 func run(cmd *cobra.Command, args []string) {
-	log := logger.Setup(config.LogsEnable)
+	cfg := config.Cfg
+	log := logger.Setup(cfg.Logs.Enabled)
 
-	log.Info("Starting ktype", "wordCount", config.WordCount, "language", config.Language, "quoteMode", config.QuoteMode)
+	log.Info("Starting ktype", "wordCount", cfg.Challenge.Words, "language", cfg.Challenge.Language, "quoteMode", cfg.Challenge.Quote)
 
-	challenge, err := loader.GenerateChallenge(config.Language, config.WordCount, config.QuoteMode)
+	challenge, err := loader.GenerateChallenge(cfg.Challenge.Language, cfg.Challenge.Words, cfg.Challenge.Quote)
 	if err != nil {
 		log.Error("Failed to generate challenge", "error", err)
 		return
