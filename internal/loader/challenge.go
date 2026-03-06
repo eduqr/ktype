@@ -2,16 +2,17 @@ package loader
 
 import (
 	"strings"
+	"github.com/eduqr/ktype/internal/config"
 )
 
-func GenerateChallenge(language string, wordCount int, quoteMode bool) ([]string, error) {
-	if quoteMode {
-		quote, err := loadQuote(language)
+func GenerateChallenge(challenge config.ChallengeConfig) ([]string, error) {
+	if challenge.Quote {
+		quote, err := loadQuote(challenge.Language)
 		if err != nil {
 			return nil, err
 		}
 		return strings.Fields(quote.Text), nil
 	}
 
-	return loadWords(language, wordCount)
+	return loadWords(challenge.Language, challenge.Words)
 }
