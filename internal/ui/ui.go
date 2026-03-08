@@ -31,32 +31,20 @@ func InitScreen() (tcell.Screen, error) {
 	return screen, nil
 }
 
-func SetupStyles() tcell.Style {
-	challengeStyle := tcell.StyleDefault.Foreground(color.Reset).Background(color.Reset)
-
-	return challengeStyle
-}
-
-func DrawChallenge(screen tcell.Screen, cells []Cell, style tcell.Style) {
+func DrawChallenge(screen tcell.Screen, cells []Cell, styles Styles) {
 	screen.Clear()
 
 	for _, cell := range cells {
-		screen.PutStrStyled(cell.X, cell.Y, cell.Expected, style)
+		DrawCell(screen, cell, styles)
 	}
 }
 
-func DrawCell(screen tcell.Screen, cell Cell) {
-	var cellStyle tcell.Style
-	switch cell.State {
-	case 0:
-		cellStyle = tcell.StyleDefault.Foreground(color.Reset).Background(color.Reset)
-	case 1:
-		cellStyle = tcell.StyleDefault.Foreground(color.Green).Background(color.Reset)
-	case 2:
-		cellStyle = tcell.StyleDefault.Foreground(color.Red).Background(color.Reset)
-	}
+func DrawCell(screen tcell.Screen, cell Cell, styles Styles) {
+	screen.Put(cell.X, cell.Y, cell.Expected, styles.CellStyle(cell.State))
+}
 
-	screen.Put(cell.X, cell.Y, cell.Expected, cellStyle)
+func DrawCursorCell(screen tcell.Screen, cell Cell, styles Styles) {
+	screen.Put(cell.X, cell.Y, cell.Expected, styles.CursorStyle(cell.State))
 }
 
 func drawTitle(screen tcell.Screen, style tcell.Style) {
