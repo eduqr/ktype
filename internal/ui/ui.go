@@ -1,10 +1,16 @@
 package ui
 
 import (
-	"github.com/eduqr/ktype/internal/typer"
 	"github.com/gdamore/tcell/v3"
 	"github.com/gdamore/tcell/v3/color"
 )
+
+type Cell struct {
+	X, Y      int
+	Expected  string
+	State     int
+	WordIndex int
+}
 
 func InitScreen() (tcell.Screen, error) {
 	defStyle := tcell.StyleDefault.Background(color.Reset).Foreground(color.Reset)
@@ -31,12 +37,26 @@ func SetupStyles() tcell.Style {
 	return challengeStyle
 }
 
-func DrawChallenge(screen tcell.Screen, cells []typer.Cell, style tcell.Style) {
+func DrawChallenge(screen tcell.Screen, cells []Cell, style tcell.Style) {
 	screen.Clear()
 
 	for _, cell := range cells {
 		screen.PutStrStyled(cell.X, cell.Y, cell.Expected, style)
 	}
+}
+
+func DrawCell(screen tcell.Screen, cell Cell) {
+	var cellStyle tcell.Style
+	switch cell.State {
+	case 0:
+		cellStyle = tcell.StyleDefault.Foreground(color.Reset).Background(color.Reset)
+	case 1:
+		cellStyle = tcell.StyleDefault.Foreground(color.Green).Background(color.Reset)
+	case 2:
+		cellStyle = tcell.StyleDefault.Foreground(color.Red).Background(color.Reset)
+	}
+
+	screen.Put(cell.X, cell.Y, cell.Expected, cellStyle)
 }
 
 func drawTitle(screen tcell.Screen, style tcell.Style) {
