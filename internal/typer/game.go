@@ -9,6 +9,7 @@ import (
 
 type GameState struct {
 	Cells       []ui.Cell
+	Styles      ui.Styles
 	CursorIndex int
 	TotalChars  int
 	Errors      int
@@ -52,9 +53,10 @@ func BuildCells(challenge []string, startX, startY int, screenWidth, screenHeigh
 	return cells
 }
 
-func InitGameState(cells []ui.Cell) GameState {
+func InitGameState(cells []ui.Cell, styles ui.Styles) GameState {
 	return GameState{
 		Cells:       cells,
+		Styles:      styles,
 		CursorIndex: 0,
 		TotalChars:  len(cells),
 		Errors:      0,
@@ -63,13 +65,16 @@ func InitGameState(cells []ui.Cell) GameState {
 }
 
 func StartGame(screen tcell.Screen, gameState GameState) {
+	drawCursor(screen, gameState)
+
 	for {
-		screen.Show()
 		event := <-screen.EventQ()
 
 		switch ev := event.(type) {
 		case *tcell.EventResize:
 			screen.Sync()
+			ui.DrawChallenge(screen, gameState.Cells, gameState.Styles)
+			drawCursor(screen, gameState)
 		case *tcell.EventKey:
 			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
 				return
@@ -84,13 +89,13 @@ func StartGame(screen tcell.Screen, gameState GameState) {
 					continue
 				}
 
+				ui.DrawCell(screen, gameState.Cells[gameState.CursorIndex], gameState.Styles)
 				gameState.CursorIndex--
-				cell := gameState.Cells[gameState.CursorIndex]
-				gameState.Cells[gameState.CursorIndex].State = 0
-				if cell.State == 2 {
+				if gameState.Cells[gameState.CursorIndex].State == 2 {
 					gameState.Errors--
 				}
-				ui.DrawCell(screen, cell)
+				gameState.Cells[gameState.CursorIndex].State = 0
+				ui.DrawCursorCell(screen, gameState.Cells[gameState.CursorIndex], gameState.Styles)
 
 			}
 			if ev.Key() == tcell.KeyRune {
@@ -99,32 +104,42 @@ func StartGame(screen tcell.Screen, gameState GameState) {
 				}
 
 				input := ev.Str()
-				cell := gameState.Cells[gameState.CursorIndex]
-				expected := cell.Expected
+				currentIndex := gameState.CursorIndex
+				expected := gameState.Cells[currentIndex].Expected
 
 				if input == expected {
-					cell.State = 1
-					if expected != " " {
-						ui.DrawCell(screen, cell)
-					}
+					gameState.Cells[currentIndex].State = 1
 				} else if expected == " " {
-					cell.State = 1
-					ui.DrawCell(screen, cell)
+					gameState.Cells[currentIndex].State = 1
 				} else {
-					cell.State = 2
+					gameState.Cells[currentIndex].State = 2
 					gameState.Errors++
-					ui.DrawCell(screen, cell)
 				}
+
+				ui.DrawCell(screen, gameState.Cells[currentIndex], gameState.Styles)
 				gameState.CursorIndex++
 
 				if gameState.CursorIndex >= gameState.TotalChars {
 					gameState.IsDone = true
+					screen.Show()
 					return
 				}
+
+				ui.DrawCursorCell(screen, gameState.Cells[gameState.CursorIndex], gameState.Styles)
 			}
 		}
 
-		screen.ShowCursor(gameState.Cells[gameState.CursorIndex].X, gameState.Cells[gameState.CursorIndex].Y)
-
+		drawCursor(screen, gameState)
+		screen.Show()
 	}
+}
+
+func drawCursor(screen tcell.Screen, gameState GameState) {
+	if gameState.CursorIndex >= gameState.TotalChars {
+		return
+	}
+
+	cell := gameState.Cells[gameState.CursorIndex]
+	ui.DrawCursorCell(screen, cell, gameState.Styles)
+	screen.ShowCursor(cell.X, cell.Y)
 }

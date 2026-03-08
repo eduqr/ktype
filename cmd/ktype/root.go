@@ -15,6 +15,12 @@ func run(cmd *cobra.Command, args []string) {
 
 	log.Info("Starting ktype", "wordCount", cfg.Challenge.Words, "language", cfg.Challenge.Language, "quoteMode", cfg.Challenge.Quote)
 
+	styles, err := ui.NewStyles(cfg.Theme)
+	if err != nil {
+		log.Error("Failed to setup styles", "error", err)
+		return
+	}
+
 	challenge, err := loader.GenerateChallenge(cfg.Challenge)
 	if err != nil {
 		log.Error("Failed to generate challenge", "error", err)
@@ -33,8 +39,8 @@ func run(cmd *cobra.Command, args []string) {
 	w, h := screen.Size()
 	cells := typer.BuildCells(challenge, 0, 1, w, h)
 
-	ui.DrawChallenge(screen, cells, ui.SetupStyles())
+	ui.DrawChallenge(screen, cells, styles)
 
-	gameState := typer.InitGameState(cells)
+	gameState := typer.InitGameState(cells, styles)
 	typer.StartGame(screen, gameState)
 }
