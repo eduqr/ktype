@@ -39,10 +39,10 @@ func InitConfig() error {
 	viper.SetDefault("challenge.language", "english")
 	viper.SetDefault("challenge.quote", false)
 	viper.SetDefault("logs.enabled", false)
-	viper.SetDefault("theme.normal", "#ffffff")
-	viper.SetDefault("theme.correct", "#00ff00")
-	viper.SetDefault("theme.incorrect", "#ff0000")
-	viper.SetDefault("theme.cursor", "#ffff00")
+	viper.SetDefault("theme.normal", "#a9b1d6")
+	viper.SetDefault("theme.correct", "#b9f27c")
+	viper.SetDefault("theme.incorrect", "#f7768e")
+	viper.SetDefault("theme.cursor", "#e0af68")
 
 	configDir, err := os.UserConfigDir()
 	if err != nil {
