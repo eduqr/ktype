@@ -8,6 +8,7 @@ import (
 )
 
 type GameState struct {
+	Challenge   []string
 	Cells       []ui.Cell
 	Styles      ui.Styles
 	CursorIndex int
@@ -21,7 +22,7 @@ func BuildCells(challenge []string, startX, startY int, screenWidth int) []ui.Ce
 
 	for i, word := range challenge {
 		runeCount := utf8.RuneCountInString(word)
-		if startX+runeCount >= screenWidth {
+		if startX > 0 && startX+runeCount >= screenWidth {
 			startY++
 			startX = 0
 		}
@@ -53,8 +54,9 @@ func BuildCells(challenge []string, startX, startY int, screenWidth int) []ui.Ce
 	return cells
 }
 
-func InitGameState(cells []ui.Cell, styles ui.Styles) GameState {
+func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles) GameState {
 	return GameState{
+		Challenge:   challenge,
 		Cells:       cells,
 		Styles:      styles,
 		CursorIndex: 0,
@@ -75,6 +77,7 @@ func StartGame(screen tcell.Screen, gameState GameState) {
 		switch ev := event.(type) {
 		case *tcell.EventResize:
 			screen.Sync()
+			gameState.relayout(screen)
 			ui.DrawChallenge(screen, gameState.Cells, gameState.Styles)
 		case *tcell.EventKey:
 			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
@@ -130,6 +133,19 @@ func StartGame(screen tcell.Screen, gameState GameState) {
 		drawCursor(screen, gameState)
 		screen.Show()
 	}
+}
+
+func (gameState *GameState) relayout(screen tcell.Screen) {
+	screenWidth, _ := screen.Size()
+	resizedCells := BuildCells(gameState.Challenge, 0, 1, screenWidth)
+	for index := range resizedCells {
+		if index >= len(gameState.Cells) {
+			break
+		}
+		resizedCells[index].State = gameState.Cells[index].State
+	}
+
+	gameState.Cells = resizedCells
 }
 
 func drawCursor(screen tcell.Screen, gameState GameState) {
