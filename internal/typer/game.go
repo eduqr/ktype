@@ -89,18 +89,18 @@ func StartGame(screen tcell.Screen, gameState GameState) {
 					continue
 				}
 
+				// block crossing into the prev word if it was completed correctly
 				if gameState.Cells[gameState.CursorIndex].WordIndex != gameState.Cells[gameState.CursorIndex-1].WordIndex {
-					continue
+					if isPrevWordCorrect(gameState.Cells, gameState.CursorIndex) {
+						continue
+					}
 				}
 
 				ui.DrawCell(screen, gameState.Cells[gameState.CursorIndex], gameState.Styles)
 				gameState.CursorIndex--
-				if gameState.Cells[gameState.CursorIndex].State == 2 {
-					gameState.Errors--
-				}
 				gameState.Cells[gameState.CursorIndex].State = 0
-
 			}
+
 			if ev.Key() == tcell.KeyRune {
 				if gameState.IsDone {
 					return
@@ -111,8 +111,6 @@ func StartGame(screen tcell.Screen, gameState GameState) {
 				expected := gameState.Cells[currentIndex].Expected
 
 				if input == expected {
-					gameState.Cells[currentIndex].State = 1
-				} else if expected == " " {
 					gameState.Cells[currentIndex].State = 1
 				} else {
 					gameState.Cells[currentIndex].State = 2
@@ -146,6 +144,16 @@ func (gameState *GameState) relayout(screen tcell.Screen) {
 	}
 
 	gameState.Cells = resizedCells
+}
+
+func isPrevWordCorrect(cells []ui.Cell, cursorIndex int) bool {
+	wordIndex := cells[cursorIndex-1].WordIndex
+	for i := cursorIndex - 1; i >= 0 && cells[i].WordIndex == wordIndex; i-- {
+		if cells[i].State != 1 {
+			return false
+		}
+	}
+	return true
 }
 
 func drawCursor(screen tcell.Screen, gameState GameState) {
