@@ -16,7 +16,7 @@ type GameState struct {
 	IsDone      bool
 }
 
-func BuildCells(challenge []string, startX, startY int, screenWidth, screenHeight int) []ui.Cell {
+func BuildCells(challenge []string, startX, startY int, screenWidth int) []ui.Cell {
 	cells := make([]ui.Cell, 0)
 
 	for i, word := range challenge {
@@ -65,7 +65,9 @@ func InitGameState(cells []ui.Cell, styles ui.Styles) GameState {
 }
 
 func StartGame(screen tcell.Screen, gameState GameState) {
+	ui.DrawChallenge(screen, gameState.Cells, gameState.Styles)
 	drawCursor(screen, gameState)
+	screen.Show()
 
 	for {
 		event := <-screen.EventQ()
@@ -74,7 +76,6 @@ func StartGame(screen tcell.Screen, gameState GameState) {
 		case *tcell.EventResize:
 			screen.Sync()
 			ui.DrawChallenge(screen, gameState.Cells, gameState.Styles)
-			drawCursor(screen, gameState)
 		case *tcell.EventKey:
 			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
 				return
@@ -95,7 +96,6 @@ func StartGame(screen tcell.Screen, gameState GameState) {
 					gameState.Errors--
 				}
 				gameState.Cells[gameState.CursorIndex].State = 0
-				ui.DrawCursorCell(screen, gameState.Cells[gameState.CursorIndex], gameState.Styles)
 
 			}
 			if ev.Key() == tcell.KeyRune {
@@ -124,8 +124,6 @@ func StartGame(screen tcell.Screen, gameState GameState) {
 					screen.Show()
 					return
 				}
-
-				ui.DrawCursorCell(screen, gameState.Cells[gameState.CursorIndex], gameState.Styles)
 			}
 		}
 
