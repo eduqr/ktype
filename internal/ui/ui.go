@@ -5,13 +5,6 @@ import (
 	"github.com/gdamore/tcell/v3/color"
 )
 
-type Cell struct {
-	X, Y      int
-	Expected  string
-	State     int
-	WordIndex int
-}
-
 func InitScreen() (tcell.Screen, error) {
 	defStyle := tcell.StyleDefault.Background(color.Reset).Foreground(color.Reset)
 

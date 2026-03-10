@@ -1,8 +1,6 @@
 package typer
 
 import (
-	"unicode/utf8"
-
 	"github.com/eduqr/ktype/internal/ui"
 	"github.com/gdamore/tcell/v3"
 )
@@ -17,41 +15,10 @@ type GameState struct {
 	IsDone      bool
 }
 
-func BuildCells(challenge []string, startX, startY int, screenWidth int) []ui.Cell {
-	cells := make([]ui.Cell, 0)
-
-	for i, word := range challenge {
-		runeCount := utf8.RuneCountInString(word)
-		if startX > 0 && startX+runeCount >= screenWidth {
-			startY++
-			startX = 0
-		}
-		charPos := 0
-		for _, char := range word {
-			cell := ui.Cell{
-				X:         startX + charPos,
-				Y:         startY,
-				Expected:  string(char),
-				State:     0,
-				WordIndex: i,
-			}
-			cells = append(cells, cell)
-			charPos++
-		}
-		if i != len(challenge)-1 {
-			cell := ui.Cell{
-				X:         startX + runeCount,
-				Y:         startY,
-				Expected:  " ",
-				State:     0,
-				WordIndex: i,
-			}
-			cells = append(cells, cell)
-		}
-		startX += runeCount + 1
-	}
-
-	return cells
+type GameResult struct {
+	Errors     int
+	TotalChars int
+	Action     Action
 }
 
 func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles) GameState {
@@ -66,7 +33,7 @@ func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles) GameSt
 	}
 }
 
-func StartGame(screen tcell.Screen, gameState GameState) {
+func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 	ui.DrawChallenge(screen, gameState.Cells, gameState.Styles)
 	drawCursor(screen, gameState)
 	screen.Show()
@@ -80,50 +47,13 @@ func StartGame(screen tcell.Screen, gameState GameState) {
 			gameState.relayout(screen)
 			ui.DrawChallenge(screen, gameState.Cells, gameState.Styles)
 		case *tcell.EventKey:
-			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
-				return
-			}
-
-			if ev.Key() == tcell.KeyBackspace || ev.Key() == tcell.KeyBackspace2 {
-				if gameState.CursorIndex <= 0 || gameState.IsDone {
-					continue
-				}
-
-				// block crossing into the prev word if it was completed correctly
-				if gameState.Cells[gameState.CursorIndex].WordIndex != gameState.Cells[gameState.CursorIndex-1].WordIndex {
-					if isPrevWordCorrect(gameState.Cells, gameState.CursorIndex) {
-						continue
-					}
-				}
-
-				ui.DrawCell(screen, gameState.Cells[gameState.CursorIndex], gameState.Styles)
-				gameState.CursorIndex--
-				gameState.Cells[gameState.CursorIndex].State = 0
-			}
-
-			if ev.Key() == tcell.KeyRune {
-				if gameState.IsDone {
-					return
-				}
-
-				input := ev.Str()
-				currentIndex := gameState.CursorIndex
-				expected := gameState.Cells[currentIndex].Expected
-
-				if input == expected {
-					gameState.Cells[currentIndex].State = 1
-				} else {
-					gameState.Cells[currentIndex].State = 2
-					gameState.Errors++
-				}
-
-				ui.DrawCell(screen, gameState.Cells[currentIndex], gameState.Styles)
-				gameState.CursorIndex++
-
-				if gameState.CursorIndex >= gameState.TotalChars {
-					gameState.IsDone = true
-					screen.Show()
-					return
+			action := gameState.handleKey(screen, ev)
+			if action != ActionNone {
+				screen.Show()
+				return GameResult{
+					Errors:     gameState.Errors,
+					TotalChars: gameState.TotalChars,
+					Action:     action,
 				}
 			}
 		}
@@ -133,30 +63,7 @@ func StartGame(screen tcell.Screen, gameState GameState) {
 	}
 }
 
-func (gameState *GameState) relayout(screen tcell.Screen) {
-	screenWidth, _ := screen.Size()
-	resizedCells := BuildCells(gameState.Challenge, 0, 1, screenWidth)
-	for index := range resizedCells {
-		if index >= len(gameState.Cells) {
-			break
-		}
-		resizedCells[index].State = gameState.Cells[index].State
-	}
-
-	gameState.Cells = resizedCells
-}
-
-func isPrevWordCorrect(cells []ui.Cell, cursorIndex int) bool {
-	wordIndex := cells[cursorIndex-1].WordIndex
-	for i := cursorIndex - 1; i >= 0 && cells[i].WordIndex == wordIndex; i-- {
-		if cells[i].State != 1 {
-			return false
-		}
-	}
-	return true
-}
-
-func drawCursor(screen tcell.Screen, gameState GameState) {
+func drawCursor(screen tcell.Screen, gameState *GameState) {
 	if gameState.CursorIndex >= gameState.TotalChars {
 		return
 	}
@@ -164,4 +71,17 @@ func drawCursor(screen tcell.Screen, gameState GameState) {
 	cell := gameState.Cells[gameState.CursorIndex]
 	ui.DrawCursorCell(screen, cell, gameState.Styles)
 	screen.ShowCursor(cell.X, cell.Y)
+}
+
+func (gs *GameState) relayout(screen tcell.Screen) {
+	screenWidth, _ := screen.Size()
+	resizedCells := ui.BuildCells(gs.Challenge, 0, 1, screenWidth)
+	for index := range resizedCells {
+		if index >= len(gs.Cells) {
+			break
+		}
+		resizedCells[index].State = gs.Cells[index].State
+	}
+
+	gs.Cells = resizedCells
 }

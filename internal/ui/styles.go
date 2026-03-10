@@ -45,18 +45,18 @@ func NewStyles(theme config.ThemeConfig) (Styles, error) {
 	}, nil
 }
 
-func (styles Styles) CellStyle(state int) tcell.Style {
+func (styles Styles) CellStyle(state CellStatus) tcell.Style {
 	switch state {
-	case 1:
+	case StatusCorrect:
 		return styles.Correct
-	case 2:
+	case StatusIncorrect:
 		return styles.Incorrect
 	default:
 		return styles.Normal
 	}
 }
 
-func (styles Styles) CursorStyle(state int) tcell.Style {
+func (styles Styles) CursorStyle(state CellStatus) tcell.Style {
 	return styles.CellStyle(state).Background(styles.cursorBackground)
 }
 

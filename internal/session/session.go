@@ -44,7 +44,7 @@ func New(cfg config.Config, log *slog.Logger) (*Session, error) {
 	}
 
 	screenWidth, _ := screen.Size()
-	cells := typer.BuildCells(challenge, 0, 1, screenWidth)
+	cells := ui.BuildCells(challenge, 0, 1, screenWidth)
 	if len(cells) == 0 {
 		screen.Fini()
 		return nil, fmt.Errorf("build cells: no cells produced")
@@ -57,7 +57,7 @@ func New(cfg config.Config, log *slog.Logger) (*Session, error) {
 }
 
 func (session *Session) Run() {
-	typer.StartGame(session.screen, session.gameState)
+	typer.StartGame(session.screen, &session.gameState)
 }
 
 func (session *Session) Close() {
