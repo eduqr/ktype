@@ -94,6 +94,10 @@ func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey) Action 
 		return ActionNone
 	}
 
+	if input == " " && expected != " " {
+		return ActionNone
+	}
+
 	if input == expected {
 		gs.Cells[currentIndex].State = ui.StatusCorrect
 	} else {
