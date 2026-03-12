@@ -6,13 +6,15 @@ import (
 )
 
 type GameState struct {
-	Challenge   []string
-	Cells       []ui.Cell
-	Styles      ui.Styles
-	CursorIndex int
-	TotalChars  int
-	Errors      int
-	IsDone      bool
+	Challenge     []string
+	Cells         []ui.Cell
+	Styles        ui.Styles
+	CursorIndex   int
+	TotalChars    int
+	Errors        int
+	IsDone        bool
+	OverflowCount int
+	screenWidth   int
 }
 
 type GameResult struct {
@@ -21,7 +23,7 @@ type GameResult struct {
 	Action     Action
 }
 
-func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles) GameState {
+func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles, screenWidth int) GameState {
 	return GameState{
 		Challenge:   challenge,
 		Cells:       cells,
@@ -30,6 +32,7 @@ func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles) GameSt
 		TotalChars:  len(cells),
 		Errors:      0,
 		IsDone:      false,
+		screenWidth: screenWidth,
 	}
 }
 
@@ -64,7 +67,7 @@ func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 }
 
 func drawCursor(screen tcell.Screen, gameState *GameState) {
-	if gameState.CursorIndex >= gameState.TotalChars {
+	if gameState.CursorIndex >= len(gameState.Cells) {
 		return
 	}
 
@@ -75,13 +78,6 @@ func drawCursor(screen tcell.Screen, gameState *GameState) {
 
 func (gs *GameState) relayout(screen tcell.Screen) {
 	screenWidth, _ := screen.Size()
-	resizedCells := ui.BuildCells(gs.Challenge, 0, 1, screenWidth)
-	for index := range resizedCells {
-		if index >= len(gs.Cells) {
-			break
-		}
-		resizedCells[index].State = gs.Cells[index].State
-	}
-
-	gs.Cells = resizedCells
+	gs.screenWidth = screenWidth
+	ui.RecalcPositions(gs.Cells, 0, 1, screenWidth)
 }

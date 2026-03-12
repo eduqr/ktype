@@ -1,6 +1,8 @@
 package typer
 
 import (
+	"slices"
+
 	"github.com/eduqr/ktype/internal/ui"
 	"github.com/gdamore/tcell/v3"
 )
@@ -35,8 +37,19 @@ func (gs *GameState) handleBackspace(screen tcell.Screen) {
 		return
 	}
 
+	prevIndex := gs.CursorIndex - 1
+
+	if gs.Cells[prevIndex].IsOverflow {
+		gs.Cells = slices.Delete(gs.Cells, prevIndex, prevIndex+1)
+		gs.CursorIndex--
+		gs.OverflowCount--
+		ui.RecalcPositions(gs.Cells, 0, 1, gs.screenWidth)
+		ui.DrawChallenge(screen, gs.Cells, gs.Styles)
+		return
+	}
+
 	// block crossing into the prev word if it was completed correctly
-	if gs.Cells[gs.CursorIndex].WordIndex != gs.Cells[gs.CursorIndex-1].WordIndex {
+	if gs.Cells[gs.CursorIndex].WordIndex != gs.Cells[prevIndex].WordIndex {
 		if isPrevWordCorrect(gs.Cells, gs.CursorIndex) {
 			return
 		}
@@ -47,6 +60,8 @@ func (gs *GameState) handleBackspace(screen tcell.Screen) {
 	gs.Cells[gs.CursorIndex].State = ui.StatusPending
 }
 
+const maxOverflow = 20
+
 func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey) Action {
 	if gs.IsDone {
 		return ActionDone
@@ -55,6 +70,29 @@ func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey) Action 
 	input := ev.Str()
 	currentIndex := gs.CursorIndex
 	expected := gs.Cells[currentIndex].Expected
+
+	if expected == " " && input != " " {
+		if gs.OverflowCount >= maxOverflow {
+			return ActionNone
+		}
+		overFlowCell := ui.Cell{
+			Expected:   input,
+			State:      ui.StatusIncorrect,
+			WordIndex:  gs.Cells[currentIndex].WordIndex,
+			IsOverflow: true,
+		}
+		gs.Cells = slices.Insert(gs.Cells, currentIndex, overFlowCell)
+		gs.OverflowCount++
+		gs.Errors++
+		ui.RecalcPositions(gs.Cells, 0, 1, gs.screenWidth)
+		ui.DrawChallenge(screen, gs.Cells, gs.Styles)
+		gs.CursorIndex++
+		return ActionNone
+	}
+
+	if expected == " " && input == " " && gs.OverflowCount > 0 {
+		return ActionNone
+	}
 
 	if input == expected {
 		gs.Cells[currentIndex].State = ui.StatusCorrect
@@ -66,7 +104,7 @@ func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey) Action 
 	ui.DrawCell(screen, gs.Cells[currentIndex], gs.Styles)
 	gs.CursorIndex++
 
-	if gs.CursorIndex >= gs.TotalChars {
+	if gs.CursorIndex >= len(gs.Cells) {
 		gs.IsDone = true
 		return ActionDone
 	}

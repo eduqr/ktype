@@ -52,7 +52,7 @@ func New(cfg config.Config, log *slog.Logger) (*Session, error) {
 
 	return &Session{
 		screen:    screen,
-		gameState: typer.InitGameState(challenge, cells, styles),
+		gameState: typer.InitGameState(challenge, cells, styles, screenWidth),
 	}, nil
 }
 
