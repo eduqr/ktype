@@ -2,6 +2,7 @@ package typer
 
 import (
 	"slices"
+	"time"
 
 	"github.com/eduqr/ktype/internal/ui"
 	"github.com/gdamore/tcell/v3"
@@ -13,6 +14,8 @@ const (
 	ActionNone Action = iota
 	ActionQuit
 	ActionDone
+	ActionRepeat
+	ActionNewChallenge
 )
 
 func (gs *GameState) handleKey(screen tcell.Screen, ev *tcell.EventKey) Action {
@@ -71,6 +74,10 @@ func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey) Action 
 	currentIndex := gs.CursorIndex
 	expected := gs.Cells[currentIndex].Expected
 
+	if currentIndex == 0 && input != " " {
+		gs.StartTime = time.Now()
+	}
+
 	if expected == " " && input != " " {
 		if gs.OverflowCount >= maxOverflow {
 			return ActionNone
@@ -110,6 +117,7 @@ func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey) Action 
 
 	if gs.CursorIndex >= len(gs.Cells) {
 		gs.IsDone = true
+		gs.EndTime = time.Now()
 		return ActionDone
 	}
 
