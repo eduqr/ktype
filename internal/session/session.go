@@ -6,6 +6,7 @@ import (
 
 	"github.com/eduqr/ktype/internal/config"
 	"github.com/eduqr/ktype/internal/loader"
+	"github.com/eduqr/ktype/internal/stats"
 	"github.com/eduqr/ktype/internal/typer"
 	"github.com/eduqr/ktype/internal/ui"
 	"github.com/gdamore/tcell/v3"
@@ -57,7 +58,18 @@ func New(cfg config.Config, log *slog.Logger) (*Session, error) {
 }
 
 func (session *Session) Run() {
-	typer.StartGame(session.screen, &session.gameState)
+	result := typer.StartGame(session.screen, &session.gameState)
+	stats := stats.ComputeStats(result.CorrectCells, result.Errors, session.gameState.StartTime, session.gameState.EndTime)
+	ui.ShowResults(session.screen, stats.Accuracy, stats.WPM, stats.RawWPM, session.gameState.Styles)
+
+	for {
+		event := <-session.screen.EventQ()
+		if ev, ok := event.(*tcell.EventKey); ok {
+			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC || ev.Key() == tcell.KeyEnter {
+				break
+			}
+		}
+	}
 }
 
 func (session *Session) Close() {
