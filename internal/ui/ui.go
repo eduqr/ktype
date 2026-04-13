@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	"github.com/gdamore/tcell/v3"
 	"github.com/gdamore/tcell/v3/color"
 )
@@ -40,6 +42,17 @@ func DrawCursorCell(screen tcell.Screen, cell Cell, styles Styles) {
 	screen.Put(cell.X, cell.Y, cell.Expected, styles.CursorStyle(cell.State))
 }
 
+func ShowResults(screen tcell.Screen, accuracy, wpm, rawWPM float64, styles Styles) {
+	screen.Clear()
+	screen.HideCursor()
+
+	result := fmt.Sprintf("Acc: %.2f, WPM: %.2f, Raw WPM: %.2f", accuracy, wpm, rawWPM)
+
+	drawTitle(screen, styles.Normal)
+	screen.PutStrStyled(1, 8, result, styles.Normal)
+	screen.Show()
+}
+
 func drawTitle(screen tcell.Screen, style tcell.Style) {
 	title := []string{
 		" _    _                    ",
@@ -56,6 +69,4 @@ func drawTitle(screen tcell.Screen, style tcell.Style) {
 		screen.PutStrStyled(x, y, line, style)
 		y++
 	}
-
-	screen.Show()
 }
