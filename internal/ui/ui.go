@@ -50,7 +50,14 @@ func ShowResults(screen tcell.Screen, accuracy, wpm, rawWPM float64, styles Styl
 
 	drawTitle(screen, styles.Normal)
 	screen.PutStrStyled(1, 8, result, styles.Normal)
+	ShowOptions(screen, styles)
 	screen.Show()
+}
+
+func ShowOptions(screen tcell.Screen, styles Styles) {
+	screen.PutStrStyled(1, 11, "[r] repeat", styles.Normal)
+	screen.PutStrStyled(1, 12, "[tab] new challenge", styles.Normal)
+	screen.PutStrStyled(1, 13, "[esc] quit", styles.Normal)
 }
 
 func drawTitle(screen tcell.Screen, style tcell.Style) {
