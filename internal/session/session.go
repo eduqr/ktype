@@ -63,7 +63,7 @@ func (session *Session) Run() {
 	for {
 		result := typer.StartGame(session.screen, &session.gameState)
 		stats := stats.ComputeStats(result.CorrectCells, result.Errors, session.gameState.StartTime, session.gameState.EndTime)
-		ui.ShowResults(session.screen, stats.Accuracy, stats.WPM, stats.RawWPM, session.gameState.Styles)
+		ui.ShowFinalScreen(session.screen, session.gameState.Styles, stats)
 
 		nextAction := typer.WaitResultsAction(session.screen)
 
