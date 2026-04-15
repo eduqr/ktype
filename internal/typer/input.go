@@ -14,13 +14,18 @@ const (
 	ActionNone Action = iota
 	ActionQuit
 	ActionDone
+	ActionAbortRound
 	ActionRepeat
 	ActionNewChallenge
 )
 
 func (gs *GameState) handleKey(screen tcell.Screen, ev *tcell.EventKey) Action {
-	if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
+	if ev.Key() == tcell.KeyCtrlC {
 		return ActionQuit
+	}
+
+	if ev.Key() == tcell.KeyEscape {
+		return ActionAbortRound
 	}
 
 	if ev.Key() == tcell.KeyBackspace || ev.Key() == tcell.KeyBackspace2 {
