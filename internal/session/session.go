@@ -15,6 +15,7 @@ import (
 type Session struct {
 	screen    tcell.Screen
 	gameState typer.GameState
+	config    config.Config
 }
 
 func New(cfg config.Config, log *slog.Logger) (*Session, error) {
@@ -54,20 +55,30 @@ func New(cfg config.Config, log *slog.Logger) (*Session, error) {
 	return &Session{
 		screen:    screen,
 		gameState: typer.InitGameState(challenge, cells, styles, screenWidth),
+		config:    cfg,
 	}, nil
 }
 
 func (session *Session) Run() {
-	result := typer.StartGame(session.screen, &session.gameState)
-	stats := stats.ComputeStats(result.CorrectCells, result.Errors, session.gameState.StartTime, session.gameState.EndTime)
-	ui.ShowResults(session.screen, stats.Accuracy, stats.WPM, stats.RawWPM, session.gameState.Styles)
-
 	for {
-		event := <-session.screen.EventQ()
-		if ev, ok := event.(*tcell.EventKey); ok {
-			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC || ev.Key() == tcell.KeyEnter {
-				break
+		result := typer.StartGame(session.screen, &session.gameState)
+		stats := stats.ComputeStats(result.CorrectCells, result.Errors, session.gameState.StartTime, session.gameState.EndTime)
+		ui.ShowResults(session.screen, stats.Accuracy, stats.WPM, stats.RawWPM, session.gameState.Styles)
+
+		nextAction := typer.WaitResultsAction(session.screen)
+
+		switch nextAction {
+		case typer.ActionRepeat:
+			session.resetRound(session.gameState.Challenge)
+		case typer.ActionNewChallenge:
+			challenge, err := loader.GenerateChallenge(session.config.Challenge)
+			if err != nil {
+				slog.Error("Failed to generate challenge", "error", err)
+				return
 			}
+			session.resetRound(challenge)
+		case typer.ActionQuit:
+			return
 		}
 	}
 }
@@ -78,4 +89,10 @@ func (session *Session) Close() {
 	}
 
 	session.screen.Fini()
+}
+
+func (session *Session) resetRound(challenge []string) {
+	screenWidth, _ := session.screen.Size()
+	cells := ui.BuildCells(challenge, 0, 1, screenWidth)
+	session.gameState = typer.InitGameState(challenge, cells, session.gameState.Styles, screenWidth)
 }
