@@ -129,6 +129,37 @@ func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey) Action 
 	return ActionNone
 }
 
+func handleResultsKey(ev *tcell.EventKey) Action {
+	if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
+		return ActionQuit
+	}
+
+	if ev.Key() == tcell.KeyTab {
+		return ActionNewChallenge
+	}
+
+	if ev.Key() == tcell.KeyRune {
+		input := ev.Str()
+		if input == "r" || input == "R" {
+			return ActionRepeat
+		}
+	}
+
+	return ActionNone
+}
+
+func WaitResultsAction(screen tcell.Screen) Action {
+	for {
+		event := <-screen.EventQ()
+		if ev, ok := event.(*tcell.EventKey); ok {
+			action := handleResultsKey(ev)
+			if action != ActionNone {
+				return action
+			}
+		}
+	}
+}
+
 func isPrevWordCorrect(cells []ui.Cell, cursorIndex int) bool {
 	wordIndex := cells[cursorIndex-1].WordIndex
 	for i := cursorIndex - 1; i >= 0 && cells[i].WordIndex == wordIndex; i-- {
