@@ -22,6 +22,7 @@ func InitScreen() (tcell.Screen, error) {
 
 	screen.SetStyle(defStyle)
 	screen.DisablePaste()
+	screen.SetTitle("ktype")
 	screen.Clear()
 
 	return screen, nil
