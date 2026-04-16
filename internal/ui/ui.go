@@ -8,6 +8,21 @@ import (
 	"github.com/gdamore/tcell/v3/color"
 )
 
+var finalTitleLines = []string{
+	" _    _                    ",
+	"| | _| |_ _   _ _ __   ___ ",
+	"| |/ / __| | | | '_ \\ / _ \\",
+	"|   <| |_| |_| | |_) |  __/",
+	"|_|\\_\\\\__|\\__, | .__/ \\___|",
+	"          |___/|_|         ",
+}
+
+var finalOptionLines = []string{
+	"[r] repeat",
+	"[tab] new challenge",
+	"[esc] quit",
+}
+
 func InitScreen() (tcell.Screen, error) {
 	defStyle := tcell.StyleDefault.Background(color.Reset).Foreground(color.Reset)
 
@@ -62,24 +77,15 @@ func drawResults(screen tcell.Screen, stats stats.Stats, styles Styles) {
 }
 
 func showOptions(screen tcell.Screen, styles Styles) {
-	screen.PutStrStyled(1, 11, "[r] repeat", styles.Normal)
-	screen.PutStrStyled(1, 12, "[tab] new challenge", styles.Normal)
-	screen.PutStrStyled(1, 13, "[esc] quit", styles.Normal)
+	for i, line := range finalOptionLines {
+		screen.PutStrStyled(1, 10+i, line, styles.Normal)
+	}
 }
 
 func drawTitle(screen tcell.Screen, style tcell.Style) {
-	title := []string{
-		" _    _                    ",
-		"| | _| |_ _   _ _ __   ___ ",
-		"| |/ / __| | | | '_ \\ / _ \\",
-		"|   <| |_| |_| | |_) |  __/",
-		"|_|\\_\\\\__|\\__, | .__/ \\___|",
-		"          |___/|_|         ",
-	}
-
 	x, y := 1, 1
 
-	for _, line := range title {
+	for _, line := range finalTitleLines {
 		screen.PutStrStyled(x, y, line, style)
 		y++
 	}
