@@ -71,7 +71,7 @@ func ShowFinalScreen(screen tcell.Screen, styles Styles, stats stats.Stats) {
 }
 
 func drawResults(screen tcell.Screen, stats stats.Stats, styles Styles) {
-	result := fmt.Sprintf("Acc: %.2f, WPM: %.2f, Raw WPM: %.2f", stats.Accuracy, stats.WPM, stats.RawWPM)
+	result := fmt.Sprintf("Acc: %.2f, WPM: %.2f, Raw WPM: %.2f, Time: %.2fs", stats.Accuracy, stats.WPM, stats.RawWPM, stats.TimeElapsed.Seconds())
 
 	screen.PutStrStyled(1, 8, result, styles.Normal)
 }
