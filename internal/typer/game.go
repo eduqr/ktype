@@ -70,6 +70,21 @@ func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 	}
 }
 
+func (gs *GameState) startWPMSampler() {
+	ticker := time.NewTicker(1 * time.Second)
+	done := make(chan bool)
+	
+	for {
+		select {
+		case <-ticker.C:
+			
+		case <-done:
+			ticker.Stop()
+			return
+		}
+	}
+}
+
 func drawCursor(screen tcell.Screen, gameState *GameState) {
 	if gameState.CursorIndex >= len(gameState.Cells) {
 		return
