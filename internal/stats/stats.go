@@ -23,7 +23,7 @@ func calculateAccuracy(correctCells, errors int) float64 {
 	return acc
 }
 
-func calculateWPM(correctCells int, elapsedSeconds float64) float64 {
+func CalculateWPM(correctCells int, elapsedSeconds float64) float64 {
 	if elapsedSeconds <= 0 {
 		return 0
 	}
@@ -54,7 +54,7 @@ func calculateTimeElapsed(start, end time.Time) time.Duration {
 func ComputeStats(correctCells, errors int, start, end time.Time) (stats Stats) {
 	stats.TimeElapsed = calculateTimeElapsed(start, end)
 	stats.Accuracy = calculateAccuracy(correctCells, errors)
-	stats.WPM = calculateWPM(correctCells, stats.TimeElapsed.Seconds())
+	stats.WPM = CalculateWPM(correctCells, stats.TimeElapsed.Seconds())
 	stats.RawWPM = calculateRawWPM(correctCells, errors, stats.TimeElapsed.Seconds())
 	return
 }

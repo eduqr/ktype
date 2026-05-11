@@ -3,6 +3,7 @@ package typer
 import (
 	"time"
 
+	"github.com/eduqr/ktype/internal/stats"
 	"github.com/eduqr/ktype/internal/ui"
 	"github.com/gdamore/tcell/v3"
 )
@@ -19,6 +20,7 @@ type GameState struct {
 	StartTime     time.Time
 	EndTime       time.Time
 	WPMSamples    []float64
+	SamplesBrake  chan struct{}
 }
 
 type GameResult struct {
@@ -56,6 +58,7 @@ func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 		case *tcell.EventKey:
 			action := gameState.handleKey(screen, ev)
 			if action != ActionNone {
+				gameState.stopWPMSampler()
 				return GameResult{
 					Cells:        gameState.Cells,
 					Errors:       gameState.Errors,
@@ -71,18 +74,34 @@ func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 }
 
 func (gs *GameState) startWPMSampler() {
-	ticker := time.NewTicker(1 * time.Second)
-	done := make(chan bool)
-	
-	for {
-		select {
-		case <-ticker.C:
-			
-		case <-done:
-			ticker.Stop()
-			return
+	brake := make(chan struct{})
+	gs.SamplesBrake = brake
+
+	go func() {
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				correctCells := gs.countCorrectCells()
+				elapsed := time.Since(gs.StartTime).Seconds()
+				sample := stats.CalculateWPM(correctCells, elapsed)
+				gs.WPMSamples = append(gs.WPMSamples, sample)
+			case <-brake:
+				return
+			}
 		}
+	}()
+}
+
+func (gs *GameState) stopWPMSampler() {
+	if gs.SamplesBrake == nil {
+		return
 	}
+
+	close(gs.SamplesBrake)
+	gs.SamplesBrake = nil
 }
 
 func drawCursor(screen tcell.Screen, gameState *GameState) {
