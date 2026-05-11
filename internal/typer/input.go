@@ -81,6 +81,7 @@ func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey) Action 
 
 	if currentIndex == 0 && input != " " {
 		gs.StartTime = time.Now()
+		gs.startWPMSampler()
 	}
 
 	if expected == " " && input != " " {
