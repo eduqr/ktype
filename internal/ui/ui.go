@@ -2,10 +2,12 @@ package ui
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/eduqr/ktype/internal/stats"
 	"github.com/gdamore/tcell/v3"
 	"github.com/gdamore/tcell/v3/color"
+	"github.com/guptarohit/asciigraph"
 )
 
 var finalTitleLines = []string{
@@ -59,13 +61,14 @@ func DrawCursorCell(screen tcell.Screen, cell Cell, styles Styles) {
 	screen.Put(cell.X, cell.Y, cell.Expected, styles.CursorStyle(cell.State))
 }
 
-func ShowFinalScreen(screen tcell.Screen, styles Styles, stats stats.Stats) {
+func ShowFinalScreen(screen tcell.Screen, styles Styles, stats stats.Stats, samples []float64) {
 	screen.Clear()
 	screen.HideCursor()
 
 	drawTitle(screen, styles.Normal)
 	drawResults(screen, stats, styles)
 	showOptions(screen, styles)
+	showWPMSamples(screen, styles, samples)
 
 	screen.Show()
 }
@@ -88,5 +91,34 @@ func drawTitle(screen tcell.Screen, style tcell.Style) {
 	for _, line := range finalTitleLines {
 		screen.PutStrStyled(x, y, line, style)
 		y++
+	}
+}
+
+func showWPMSamples(screen tcell.Screen, styles Styles, samples []float64) {
+	if len(samples) == 0 {
+		screen.PutStrStyled(1, 15, "Not enough data to display the graph :(", styles.Normal)
+		return
+	}
+
+	screenWidth, _ := screen.Size()
+
+	tickCount := 6
+	if len(samples) <= 10 {
+		tickCount = len(samples)
+	}
+
+	graph := asciigraph.Plot(samples,
+		asciigraph.Height(min(4, len(samples))),
+		asciigraph.Width(screenWidth*7/10),
+		asciigraph.XAxisRange(1, float64(len(samples))),
+		asciigraph.XAxisTickCount(tickCount),
+		asciigraph.XAxisValueFormatter(func(v float64) string {
+			return fmt.Sprintf("%.0f", v)
+		}),
+		asciigraph.Precision(0),
+	)
+
+	for i, line := range strings.Split(graph, "\n") {
+		screen.PutStrStyled(1, 15+i, line, styles.Normal)
 	}
 }
