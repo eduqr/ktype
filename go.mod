@@ -4,6 +4,7 @@ go 1.25.7
 
 require (
 	github.com/gdamore/tcell/v3 v3.1.2
+	github.com/guptarohit/asciigraph v0.9.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 )
