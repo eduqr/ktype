@@ -95,7 +95,7 @@ func drawTitle(screen tcell.Screen, style tcell.Style) {
 }
 
 func showWPMSamples(screen tcell.Screen, styles Styles, samples []float64) {
-	if len(samples) == 0 {
+	if len(samples) < 2 {
 		screen.PutStrStyled(1, 15, "Not enough data to display the graph :(", styles.Normal)
 		return
 	}
