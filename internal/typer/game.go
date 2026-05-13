@@ -20,7 +20,7 @@ type GameState struct {
 	StartTime     time.Time
 	EndTime       time.Time
 	WPMSamples    []float64
-	SamplesBrake  chan struct{}
+	wpmTicker     *time.Ticker
 }
 
 type GameResult struct {
@@ -46,26 +46,35 @@ func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 	ui.DrawChallenge(screen, gameState.Cells, gameState.Styles)
 	drawCursor(screen, gameState)
 	screen.Show()
+	events := screen.EventQ()
 
 	for {
-		event := <-screen.EventQ()
+		var wpmTick <-chan time.Time
+		if gameState.wpmTicker != nil {
+			wpmTick = gameState.wpmTicker.C
+		}
 
-		switch ev := event.(type) {
-		case *tcell.EventResize:
-			screen.Sync()
-			gameState.relayout(screen)
-			ui.DrawChallenge(screen, gameState.Cells, gameState.Styles)
-		case *tcell.EventKey:
-			action := gameState.handleKey(screen, ev)
-			if action != ActionNone {
-				gameState.stopWPMSampler()
-				return GameResult{
-					Cells:        gameState.Cells,
-					Errors:       gameState.Errors,
-					CorrectCells: gameState.countCorrectCells(),
-					Action:       action,
+		select {
+		case event := <-events:
+			switch ev := event.(type) {
+			case *tcell.EventResize:
+				screen.Sync()
+				gameState.relayout(screen)
+				ui.DrawChallenge(screen, gameState.Cells, gameState.Styles)
+			case *tcell.EventKey:
+				action := gameState.handleKey(screen, ev)
+				if action != ActionNone {
+					gameState.stopWPMSampler()
+					return GameResult{
+						Cells:        gameState.Cells,
+						Errors:       gameState.Errors,
+						CorrectCells: gameState.countCorrectCells(),
+						Action:       action,
+					}
 				}
 			}
+		case <-wpmTick:
+			gameState.sampleWPM()
 		}
 
 		drawCursor(screen, gameState)
@@ -74,38 +83,27 @@ func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 }
 
 func (gs *GameState) startWPMSampler() {
-	if gs.SamplesBrake != nil {
+	if gs.wpmTicker != nil {
 		return
 	}
 
-	brake := make(chan struct{})
-	gs.SamplesBrake = brake
+	gs.wpmTicker = time.NewTicker(1 * time.Second)
+}
 
-	go func() {
-		ticker := time.NewTicker(1 * time.Second)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ticker.C:
-				correctCells := gs.countCorrectCells()
-				elapsed := time.Since(gs.StartTime).Seconds()
-				sample := stats.CalculateWPM(correctCells, elapsed)
-				gs.WPMSamples = append(gs.WPMSamples, sample)
-			case <-brake:
-				return
-			}
-		}
-	}()
+func (gs *GameState) sampleWPM() {
+	correctCells := gs.countCorrectCells()
+	elapsed := time.Since(gs.StartTime).Seconds()
+	sample := stats.CalculateWPM(correctCells, elapsed)
+	gs.WPMSamples = append(gs.WPMSamples, sample)
 }
 
 func (gs *GameState) stopWPMSampler() {
-	if gs.SamplesBrake == nil {
+	if gs.wpmTicker == nil {
 		return
 	}
 
-	close(gs.SamplesBrake)
-	gs.SamplesBrake = nil
+	gs.wpmTicker.Stop()
+	gs.wpmTicker = nil
 }
 
 func drawCursor(screen tcell.Screen, gameState *GameState) {
