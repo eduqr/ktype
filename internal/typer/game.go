@@ -74,6 +74,10 @@ func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 }
 
 func (gs *GameState) startWPMSampler() {
+	if gs.SamplesBrake != nil {
+		return
+	}
+
 	brake := make(chan struct{})
 	gs.SamplesBrake = brake
 
