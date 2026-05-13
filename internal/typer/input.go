@@ -79,7 +79,7 @@ func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey) Action 
 	currentIndex := gs.CursorIndex
 	expected := gs.Cells[currentIndex].Expected
 
-	if currentIndex == 0 && input != " " {
+	if gs.StartTime.IsZero() && currentIndex == 0 && input != " " {
 		gs.StartTime = time.Now()
 		gs.startWPMSampler()
 	}
