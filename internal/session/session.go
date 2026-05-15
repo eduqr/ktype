@@ -62,8 +62,13 @@ func New(cfg config.Config, log *slog.Logger) (*Session, error) {
 func (session *Session) Run() {
 	for {
 		result := typer.StartGame(session.screen, &session.gameState)
+
+		if result.Action == typer.ActionQuit {
+			return
+		}
+
 		stats := stats.ComputeStats(result.CorrectCells, result.Errors, session.gameState.StartTime, session.gameState.EndTime)
-		ui.ShowFinalScreen(session.screen, session.gameState.Styles, stats, session.gameState.WPMSamples)
+		ui.ShowFinalScreen(session.screen, session.gameState.Styles, stats, session.gameState.WPMSamples, result.Action == typer.ActionAbortRound)
 
 		nextAction := typer.WaitResultsAction(session.screen)
 
