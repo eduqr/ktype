@@ -61,14 +61,25 @@ func DrawCursorCell(screen tcell.Screen, cell Cell, styles Styles) {
 	screen.Put(cell.X, cell.Y, cell.Expected, styles.CursorStyle(cell.State))
 }
 
-func ShowFinalScreen(screen tcell.Screen, styles Styles, stats stats.Stats, samples []float64, forceNoGraphMessage bool) {
+func ShowFinalScreen(screen tcell.Screen, styles Styles, stats stats.Stats, samples []float64) {
 	screen.Clear()
 	screen.HideCursor()
 
 	drawTitle(screen, styles.Normal)
 	drawResults(screen, stats, styles)
 	showOptions(screen, styles)
-	showWPMSamples(screen, styles, samples, forceNoGraphMessage)
+	showWPMSamples(screen, styles, samples)
+
+	screen.Show()
+}
+
+func ShowAbortRoundScreen(screen tcell.Screen, styles Styles) {
+	screen.Clear()
+	screen.HideCursor()
+
+	drawTitle(screen, styles.Normal)
+	showAbortRoundMessage(screen, styles)
+	showOptions(screen, styles)
 
 	screen.Show()
 }
@@ -94,8 +105,12 @@ func drawTitle(screen tcell.Screen, style tcell.Style) {
 	}
 }
 
-func showWPMSamples(screen tcell.Screen, styles Styles, samples []float64, noGraph bool) {
-	if noGraph || len(samples) < 2 {
+func showAbortRoundMessage(screen tcell.Screen, styles Styles) {
+	screen.PutStrStyled(1, 8, "Challenge aborted", styles.Incorrect)
+}
+
+func showWPMSamples(screen tcell.Screen, styles Styles, samples []float64) {
+	if len(samples) < 2 {
 		screen.PutStrStyled(1, 15, "Not enough data to display the graph", styles.Normal)
 		return
 	}

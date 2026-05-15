@@ -67,8 +67,14 @@ func (session *Session) Run() {
 			return
 		}
 
-		stats := stats.ComputeStats(result.CorrectCells, result.Errors, session.gameState.StartTime, session.gameState.EndTime)
-		ui.ShowFinalScreen(session.screen, session.gameState.Styles, stats, session.gameState.WPMSamples, result.Action == typer.ActionAbortRound)
+		if result.Action == typer.ActionAbortRound {
+			ui.ShowAbortRoundScreen(session.screen, session.gameState.Styles)
+		}
+
+		if result.Action == typer.ActionDone {
+			stats := stats.ComputeStats(result.CorrectCells, result.Errors, session.gameState.StartTime, session.gameState.EndTime)
+			ui.ShowFinalScreen(session.screen, session.gameState.Styles, stats, session.gameState.WPMSamples)
+		}
 
 		nextAction := typer.WaitResultsAction(session.screen)
 
