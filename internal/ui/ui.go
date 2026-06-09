@@ -19,6 +19,10 @@ var finalTitleLines = []string{
 	"          |___/|_|         ",
 }
 
+var shortFinalTitle = []string{
+	"ktype",
+}
+
 var finalOptionLines = []string{
 	"[r] repeat",
 	"[tab] new challenge",
@@ -111,6 +115,9 @@ func showOptions(screen tcell.Screen, layout Layout, y int, styles Styles) int {
 }
 
 func drawTitle(screen tcell.Screen, layout Layout, y int, style tcell.Style) int {
+	if layout.ScreenHeight < 25 {
+		return drawLines(layout, screen, shortFinalTitle, y, style)
+	}
 	return drawLines(layout, screen, finalTitleLines, y, style)
 }
 
@@ -121,6 +128,10 @@ func showAbortRoundMessage(screen tcell.Screen, layout Layout, y int, styles Sty
 func showWPMSamples(screen tcell.Screen, layout Layout, y int, styles Styles, samples []float64) int {
 	if len(samples) < 2 {
 		return drawLines(layout, screen, []string{"Not enough data to display the graph"}, y, styles.Normal)
+	}
+
+	if layout.ScreenHeight <= 12 {
+		return drawLines(layout, screen, []string{"Not enough space to display the graph"}, y, styles.Normal)
 	}
 
 	tickCount := 6
