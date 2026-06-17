@@ -45,8 +45,8 @@ func New(cfg config.Config, log *slog.Logger) (*Session, error) {
 		return nil, fmt.Errorf("initialize screen: %w", err)
 	}
 
-	screenWidth, _ := screen.Size()
-	cells := ui.BuildCells(challenge, 0, 1, screenWidth)
+	layout := ui.NewLayout(screen)
+	cells := ui.BuildCells(challenge, layout)
 	if len(cells) == 0 {
 		screen.Fini()
 		return nil, fmt.Errorf("build cells: no cells produced")
@@ -54,7 +54,7 @@ func New(cfg config.Config, log *slog.Logger) (*Session, error) {
 
 	return &Session{
 		screen:    screen,
-		gameState: typer.InitGameState(challenge, cells, styles, screenWidth),
+		gameState: typer.InitGameState(challenge, cells, styles, layout),
 		config:    cfg,
 	}, nil
 }
@@ -103,7 +103,7 @@ func (session *Session) Close() {
 }
 
 func (session *Session) resetRound(challenge []string) {
-	screenWidth, _ := session.screen.Size()
-	cells := ui.BuildCells(challenge, 0, 1, screenWidth)
-	session.gameState = typer.InitGameState(challenge, cells, session.gameState.Styles, screenWidth)
+	layout := ui.NewLayout(session.screen)
+	cells := ui.BuildCells(challenge, layout)
+	session.gameState = typer.InitGameState(challenge, cells, session.gameState.Styles, layout)
 }

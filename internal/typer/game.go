@@ -16,7 +16,7 @@ type GameState struct {
 	Errors        int
 	IsDone        bool
 	OverflowCount int
-	screenWidth   int
+	layout        ui.Layout
 	StartTime     time.Time
 	EndTime       time.Time
 	WPMSamples    []float64
@@ -30,7 +30,7 @@ type GameResult struct {
 	Action       Action
 }
 
-func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles, screenWidth int) GameState {
+func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles, layout ui.Layout) GameState {
 	return GameState{
 		Challenge:   challenge,
 		Cells:       cells,
@@ -38,7 +38,7 @@ func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles, screen
 		CursorIndex: 0,
 		Errors:      0,
 		IsDone:      false,
-		screenWidth: screenWidth,
+		layout:      layout,
 	}
 }
 
@@ -117,9 +117,8 @@ func drawCursor(screen tcell.Screen, gameState *GameState) {
 }
 
 func (gs *GameState) relayout(screen tcell.Screen) {
-	screenWidth, _ := screen.Size()
-	gs.screenWidth = screenWidth
-	ui.RecalcPositions(gs.Cells, 0, 1, screenWidth)
+	gs.layout = ui.NewLayout(screen)
+	ui.RecalcChallengePositions(gs.Cells, gs.layout)
 }
 
 func (gs *GameState) countCorrectCells() int {

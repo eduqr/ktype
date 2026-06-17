@@ -51,7 +51,7 @@ func (gs *GameState) handleBackspace(screen tcell.Screen) {
 		gs.Cells = slices.Delete(gs.Cells, prevIndex, prevIndex+1)
 		gs.CursorIndex--
 		gs.OverflowCount--
-		ui.RecalcPositions(gs.Cells, 0, 1, gs.screenWidth)
+		ui.RecalcChallengePositions(gs.Cells, gs.layout)
 		ui.DrawChallenge(screen, gs.Cells, gs.Styles)
 		return
 	}
@@ -97,7 +97,7 @@ func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey) Action 
 		gs.Cells = slices.Insert(gs.Cells, currentIndex, overFlowCell)
 		gs.OverflowCount++
 		gs.Errors++
-		ui.RecalcPositions(gs.Cells, 0, 1, gs.screenWidth)
+		ui.RecalcChallengePositions(gs.Cells, gs.layout)
 		ui.DrawChallenge(screen, gs.Cells, gs.Styles)
 		gs.CursorIndex++
 		return ActionNone

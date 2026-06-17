@@ -16,7 +16,7 @@ type Cell struct {
 	IsOverflow bool
 }
 
-func BuildCells(challenge []string, startX, startY int, screenWidth int) []Cell {
+func BuildCells(challenge []string, layout Layout) []Cell {
 	cells := make([]Cell, 0)
 
 	for i, word := range challenge {
@@ -38,8 +38,44 @@ func BuildCells(challenge []string, startX, startY int, screenWidth int) []Cell 
 		}
 	}
 
-	RecalcPositions(cells, startX, startY, screenWidth)
+	RecalcChallengePositions(cells, layout)
 	return cells
+}
+
+func RecalcChallengePositions(cells []Cell, layout Layout) {
+	RecalcPositions(cells, layout.Left, 0, layout.ContentWidth)
+	lineCount := cellLineCount(cells)
+	startY := challengeStartY(layout, lineCount)
+
+	RecalcPositions(cells, layout.Left, startY, layout.ContentWidth)
+}
+
+func cellLineCount(cells []Cell) int {
+	if len(cells) == 0 {
+		return 0
+	}
+
+	maxY := cells[0].Y
+	for _, cell := range cells[1:] {
+		if cell.Y > maxY {
+			maxY = cell.Y
+		}
+	}
+
+	return maxY + 1
+}
+
+func challengeStartY(layout Layout, lineCount int) int {
+	if lineCount <= 0 {
+		return layout.Top
+	}
+
+	top := max((layout.ScreenHeight-lineCount)/4, layout.Top)
+	if top+lineCount > layout.ScreenHeight {
+		top = max(layout.ScreenHeight-lineCount, 0)
+	}
+
+	return top
 }
 
 // returns the number of cells belonging to the same word index (word + space + overflow)
@@ -52,8 +88,13 @@ func wordGroupLen(cells []Cell, i int) int {
 	return n
 }
 
-func RecalcPositions(cells []Cell, startX, startY, screenWidth int) {
+func RecalcPositions(cells []Cell, startX, startY, lineWidth int) {
+	if lineWidth < 1 {
+		lineWidth = 1
+	}
+
 	x, y := startX, startY
+	rightX := startX + lineWidth
 
 	for i := range cells {
 		cell := &cells[i]
@@ -68,10 +109,10 @@ func RecalcPositions(cells []Cell, startX, startY, screenWidth int) {
 					isWordStart = true
 				}
 			}
-			if isWordStart && x > 0 {
+			if isWordStart && x > startX {
 				wordLen := wordGroupLen(cells, i)
-				if x+wordLen > screenWidth {
-					x = 0
+				if x+wordLen > rightX {
+					x = startX
 					y++
 				}
 			}
@@ -81,8 +122,8 @@ func RecalcPositions(cells []Cell, startX, startY, screenWidth int) {
 		cell.Y = y
 		x++
 
-		if x >= screenWidth {
-			x = 0
+		if x >= rightX {
+			x = startX
 			y++
 		}
 	}
