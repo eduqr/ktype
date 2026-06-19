@@ -149,14 +149,19 @@ func handleResultsKey(ev *tcell.EventKey) Action {
 	return ActionNone
 }
 
-func WaitResultsAction(screen tcell.Screen) Action {
+func WaitResultsAction(screen tcell.Screen, redraw func()) Action {
 	for {
 		event := <-screen.EventQ()
-		if ev, ok := event.(*tcell.EventKey); ok {
+
+		switch ev := event.(type) {
+		case *tcell.EventKey:
 			action := handleResultsKey(ev)
 			if action != ActionNone {
 				return action
 			}
+		case *tcell.EventResize:
+			screen.Sync()
+			redraw()
 		}
 	}
 }

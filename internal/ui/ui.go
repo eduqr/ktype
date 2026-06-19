@@ -115,7 +115,7 @@ func showOptions(screen tcell.Screen, layout Layout, y int, styles Styles) int {
 }
 
 func drawTitle(screen tcell.Screen, layout Layout, y int, style tcell.Style) int {
-	if layout.ScreenHeight < 25 {
+	if layout.ScreenHeight < 25 || layout.ScreenWidth < 30 {
 		return drawLines(layout, screen, shortFinalTitle, y, style)
 	}
 	return drawLines(layout, screen, finalTitleLines, y, style)
@@ -130,7 +130,7 @@ func showWPMSamples(screen tcell.Screen, layout Layout, y int, styles Styles, sa
 		return drawLines(layout, screen, []string{"Not enough data to display the graph"}, y, styles.Normal)
 	}
 
-	if layout.ScreenHeight <= 12 {
+	if layout.ScreenHeight <= 15 || layout.ScreenWidth <= 35 {
 		return drawLines(layout, screen, []string{"Not enough space to display the graph"}, y, styles.Normal)
 	}
 
