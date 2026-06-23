@@ -2,6 +2,11 @@ package ui
 
 import "github.com/gdamore/tcell/v3"
 
+const (
+	MinScreenWidth  = 40
+	MinScreenHeight = 10
+)
+
 type Layout struct {
 	ScreenWidth  int
 	ScreenHeight int
@@ -33,6 +38,44 @@ func NewLayout(screen tcell.Screen) Layout {
 		Top:          top,
 		Left:         left,
 	}
+}
+
+func (layout Layout) IsSupported() bool {
+	return layout.ScreenWidth >= MinScreenWidth && layout.ScreenHeight >= MinScreenHeight
+}
+
+func (layout Layout) UseShortTitle() bool {
+	return layout.ScreenHeight < 25
+}
+
+func (layout Layout) UseStackedOptions() bool {
+	return layout.ContentWidth < 60
+}
+
+func (layout Layout) CanShowGraph(y int, reservedLines int) bool {
+	const minGraphWidth = 36
+	const minGraphLines = 7
+
+	availableLines := layout.ScreenHeight - y - reservedLines
+	return layout.ContentWidth >= minGraphWidth && availableLines >= minGraphLines
+}
+
+func (layout Layout) OptionsLineCount() int {
+	if layout.UseStackedOptions() {
+		return 3
+	}
+	return 1
+}
+
+func (layout Layout) Gap() int {
+	if layout.ScreenHeight < 18 {
+		return 1
+	}
+	return 2
+}
+
+func (layout Layout) HasRoom(y int, lines int) bool {
+	return y+lines <= layout.ScreenHeight
 }
 
 func textWidth(s string) int {
