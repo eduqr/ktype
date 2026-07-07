@@ -44,7 +44,11 @@ func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles, layout
 
 func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 	ui.DrawChallenge(screen, gameState.Cells, gameState.Styles)
-	drawCursor(screen, gameState)
+	if gameState.layout.IsSupported() {
+		drawCursor(screen, gameState)
+	} else {
+		screen.HideCursor()
+	}
 	screen.Show()
 	events := screen.EventQ()
 
@@ -77,7 +81,11 @@ func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 			gameState.sampleWPM()
 		}
 
-		drawCursor(screen, gameState)
+		if gameState.layout.IsSupported() {
+			drawCursor(screen, gameState)
+		} else {
+			screen.HideCursor()
+		}
 		screen.Show()
 	}
 }

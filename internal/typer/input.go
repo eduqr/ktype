@@ -28,6 +28,10 @@ func (gs *GameState) handleKey(screen tcell.Screen, ev *tcell.EventKey) Action {
 		return ActionAbortRound
 	}
 
+	if !gs.layout.IsSupported() {
+		return ActionNone
+	}
+
 	if ev.Key() == tcell.KeyBackspace || ev.Key() == tcell.KeyBackspace2 {
 		gs.handleBackspace(screen)
 		return ActionNone
