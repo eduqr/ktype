@@ -120,17 +120,29 @@ func ShowAbortRoundScreen(screen tcell.Screen, styles Styles) {
 }
 
 func drawResults(screen tcell.Screen, layout Layout, y int, stats stats.Stats, styles Styles) int {
-	result := fmt.Sprintf("Acc: %.2f, WPM: %.2f, Raw WPM: %.2f, Time: %.2fs", stats.Accuracy, stats.WPM, stats.RawWPM, stats.TimeElapsed.Seconds())
-	if textWidth(result) <= layout.ContentWidth {
-		return drawLines(layout, screen, []string{result}, y, styles.Normal)
-	}
+	const separator = "  "
 
-	return drawLinesLeft(layout, screen, []string{
+	results := []string{
 		fmt.Sprintf("Acc: %.2f", stats.Accuracy),
 		fmt.Sprintf("WPM: %.2f", stats.WPM),
 		fmt.Sprintf("Raw WPM: %.2f", stats.RawWPM),
 		fmt.Sprintf("Time: %.2fs", stats.TimeElapsed.Seconds()),
-	}, y, styles.Normal)
+	}
+	result := strings.Join(results, separator)
+
+	if textWidth(result) <= layout.ContentWidth {
+		x := centerX(layout, result)
+		for i, result := range results {
+			if i > 0 {
+				x += textWidth(separator)
+			}
+			screen.PutStrStyled(x, y, result, styles.Normal)
+			x += textWidth(result)
+		}
+		return y + 1
+	}
+
+	return drawLinesLeft(layout, screen, results, y, styles.Normal)
 }
 
 func showOptions(screen tcell.Screen, layout Layout, y int, styles Styles) int {
