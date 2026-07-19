@@ -10,10 +10,17 @@ import (
 )
 
 type Styles struct {
-	Normal           tcell.Style
-	Correct          tcell.Style
-	Incorrect        tcell.Style
-	cursorBackground color.Color
+	Normal    tcell.Style
+	Correct   tcell.Style
+	Incorrect tcell.Style
+	Title     tcell.Style
+	Accuracy  tcell.Style
+	WPM       tcell.Style
+	RawWPM    tcell.Style
+	Time      tcell.Style
+	Graph     tcell.Style
+	Actions   tcell.Style
+	Error     tcell.Style
 }
 
 func NewStyles(theme config.ThemeConfig) (Styles, error) {
@@ -32,16 +39,58 @@ func NewStyles(theme config.ThemeConfig) (Styles, error) {
 		return Styles{}, err
 	}
 
-	cursorColor, err := resolveThemeColor("theme.cursor", theme.Cursor)
+	titleColor, err := resolveThemeColor("theme.title", theme.Title)
+	if err != nil {
+		return Styles{}, err
+	}
+
+	accuracyColor, err := resolveThemeColor("theme.accuracy", theme.Accuracy)
+	if err != nil {
+		return Styles{}, err
+	}
+
+	wpmColor, err := resolveThemeColor("theme.wpm", theme.WPM)
+	if err != nil {
+		return Styles{}, err
+	}
+
+	rawWPMColor, err := resolveThemeColor("theme.raw_wpm", theme.RawWPM)
+	if err != nil {
+		return Styles{}, err
+	}
+
+	timeColor, err := resolveThemeColor("theme.time", theme.Time)
+	if err != nil {
+		return Styles{}, err
+	}
+
+	graphColor, err := resolveThemeColor("theme.graph", theme.Graph)
+	if err != nil {
+		return Styles{}, err
+	}
+
+	actionsColor, err := resolveThemeColor("theme.actions", theme.Actions)
+	if err != nil {
+		return Styles{}, err
+	}
+
+	errorColor, err := resolveThemeColor("theme.error", theme.Error)
 	if err != nil {
 		return Styles{}, err
 	}
 
 	return Styles{
-		Normal:           tcell.StyleDefault.Foreground(normalColor).Background(color.Reset),
-		Correct:          tcell.StyleDefault.Foreground(correctColor).Background(color.Reset),
-		Incorrect:        tcell.StyleDefault.Foreground(incorrectColor).Background(color.Reset),
-		cursorBackground: cursorColor,
+		Normal:    tcell.StyleDefault.Foreground(normalColor).Background(color.Reset),
+		Correct:   tcell.StyleDefault.Foreground(correctColor).Background(color.Reset),
+		Incorrect: tcell.StyleDefault.Foreground(incorrectColor).Background(color.Reset),
+		Title:     tcell.StyleDefault.Foreground(titleColor).Background(color.Reset),
+		Accuracy:  tcell.StyleDefault.Foreground(accuracyColor).Background(color.Reset),
+		WPM:       tcell.StyleDefault.Foreground(wpmColor).Background(color.Reset),
+		RawWPM:    tcell.StyleDefault.Foreground(rawWPMColor).Background(color.Reset),
+		Time:      tcell.StyleDefault.Foreground(timeColor).Background(color.Reset),
+		Graph:     tcell.StyleDefault.Foreground(graphColor).Background(color.Reset),
+		Actions:   tcell.StyleDefault.Foreground(actionsColor).Background(color.Reset),
+		Error:     tcell.StyleDefault.Foreground(errorColor).Background(color.Reset),
 	}, nil
 }
 
@@ -54,10 +103,6 @@ func (styles Styles) CellStyle(state CellStatus) tcell.Style {
 	default:
 		return styles.Normal
 	}
-}
-
-func (styles Styles) CursorStyle(state CellStatus) tcell.Style {
-	return styles.CellStyle(state).Background(styles.cursorBackground)
 }
 
 func resolveThemeColor(fieldName, value string) (color.Color, error) {

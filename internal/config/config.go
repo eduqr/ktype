@@ -23,7 +23,14 @@ type ThemeConfig struct {
 	Normal    string `mapstructure:"normal"`
 	Correct   string `mapstructure:"correct"`
 	Incorrect string `mapstructure:"incorrect"`
-	Cursor    string `mapstructure:"cursor"`
+	Title     string `mapstructure:"title"`
+	Accuracy  string `mapstructure:"accuracy"`
+	WPM       string `mapstructure:"wpm"`
+	RawWPM    string `mapstructure:"raw_wpm"`
+	Time      string `mapstructure:"time"`
+	Graph     string `mapstructure:"graph"`
+	Actions   string `mapstructure:"actions"`
+	Error     string `mapstructure:"error"`
 }
 
 type Config struct {
@@ -42,7 +49,14 @@ func InitConfig() error {
 	viper.SetDefault("theme.normal", "#a9b1d6")
 	viper.SetDefault("theme.correct", "#b9f27c")
 	viper.SetDefault("theme.incorrect", "#f7768e")
-	viper.SetDefault("theme.cursor", "#e0af68")
+	viper.SetDefault("theme.title", "#cfc9c2")
+	viper.SetDefault("theme.accuracy", "#e0af68")
+	viper.SetDefault("theme.wpm", "#7aa2f7")
+	viper.SetDefault("theme.raw_wpm", "#7dcfff")
+	viper.SetDefault("theme.time", "#bb9af7")
+	viper.SetDefault("theme.graph", "#7aa2f7")
+	viper.SetDefault("theme.actions", "#565f89")
+	viper.SetDefault("theme.error", "#f7768e")
 
 	configDir, err := os.UserConfigDir()
 	if err != nil {

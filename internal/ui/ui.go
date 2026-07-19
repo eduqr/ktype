@@ -67,10 +67,6 @@ func DrawCell(screen tcell.Screen, cell Cell, styles Styles) {
 	screen.Put(cell.X, cell.Y, cell.Expected, styles.CellStyle(cell.State))
 }
 
-func DrawCursorCell(screen tcell.Screen, cell Cell, styles Styles) {
-	screen.Put(cell.X, cell.Y, cell.Expected, styles.CursorStyle(cell.State))
-}
-
 func ShowFinalScreen(screen tcell.Screen, styles Styles, stats stats.Stats, samples []float64) {
 	screen.Clear()
 	screen.HideCursor()
@@ -85,7 +81,7 @@ func ShowFinalScreen(screen tcell.Screen, styles Styles, stats stats.Stats, samp
 	y := layout.Top
 	gap := layout.Gap()
 
-	y = drawTitle(screen, layout, y, styles.Normal)
+	y = drawTitle(screen, layout, y, styles.Title)
 	y += gap
 	y = drawResults(screen, layout, y, stats, styles)
 	y += gap
@@ -110,7 +106,7 @@ func ShowAbortRoundScreen(screen tcell.Screen, styles Styles) {
 	y := layout.Top
 	gap := layout.Gap()
 
-	y = drawTitle(screen, layout, y, styles.Normal)
+	y = drawTitle(screen, layout, y, styles.Title)
 	y += gap
 	y = showAbortRoundMessage(screen, layout, y, styles)
 	y += gap
@@ -128,6 +124,7 @@ func drawResults(screen tcell.Screen, layout Layout, y int, stats stats.Stats, s
 		fmt.Sprintf("Raw WPM: %.2f", stats.RawWPM),
 		fmt.Sprintf("Time: %.2fs", stats.TimeElapsed.Seconds()),
 	}
+	resultStyles := []tcell.Style{styles.Accuracy, styles.WPM, styles.RawWPM, styles.Time}
 	result := strings.Join(results, separator)
 
 	if textWidth(result) <= layout.ContentWidth {
@@ -136,22 +133,26 @@ func drawResults(screen tcell.Screen, layout Layout, y int, stats stats.Stats, s
 			if i > 0 {
 				x += textWidth(separator)
 			}
-			screen.PutStrStyled(x, y, result, styles.Normal)
+			screen.PutStrStyled(x, y, result, resultStyles[i])
 			x += textWidth(result)
 		}
 		return y + 1
 	}
 
-	return drawLinesLeft(layout, screen, results, y, styles.Normal)
+	for i, result := range results {
+		screen.PutStrStyled(layout.Left, y+i, result, resultStyles[i])
+	}
+
+	return y + len(results)
 }
 
 func showOptions(screen tcell.Screen, layout Layout, y int, styles Styles) int {
 	if layout.UseStackedOptions() {
-		return drawLinesLeft(layout, screen, finalOptionLines, y, styles.Normal)
+		return drawLinesLeft(layout, screen, finalOptionLines, y, styles.Actions)
 	}
 
 	options := strings.Join(finalOptionLines, "     ")
-	return drawLines(layout, screen, []string{options}, y, styles.Normal)
+	return drawLines(layout, screen, []string{options}, y, styles.Actions)
 }
 
 func drawTitle(screen tcell.Screen, layout Layout, y int, style tcell.Style) int {
@@ -162,7 +163,7 @@ func drawTitle(screen tcell.Screen, layout Layout, y int, style tcell.Style) int
 }
 
 func showAbortRoundMessage(screen tcell.Screen, layout Layout, y int, styles Styles) int {
-	return drawLines(layout, screen, []string{"Challenge aborted"}, y, styles.Incorrect)
+	return drawLines(layout, screen, []string{"Challenge aborted"}, y, styles.Error)
 }
 
 func showWPMSamples(screen tcell.Screen, layout Layout, y int, styles Styles, samples []float64) int {
@@ -172,14 +173,14 @@ func showWPMSamples(screen tcell.Screen, layout Layout, y int, styles Styles, sa
 		if !layout.HasRoom(y, reservedLines+1) {
 			return y
 		}
-		return drawLines(layout, screen, []string{"Not enough data to display the graph"}, y, styles.Normal)
+		return drawLines(layout, screen, []string{"Not enough data to display the graph"}, y, styles.Error)
 	}
 
 	if !layout.CanShowGraph(y, reservedLines) {
 		if !layout.HasRoom(y, reservedLines+1) {
 			return y
 		}
-		return drawLines(layout, screen, []string{"Not enough space to display the graph"}, y, styles.Normal)
+		return drawLines(layout, screen, []string{"Not enough space to display the graph"}, y, styles.Error)
 	}
 
 	tickCount := 6
@@ -198,7 +199,7 @@ func showWPMSamples(screen tcell.Screen, layout Layout, y int, styles Styles, sa
 		asciigraph.Precision(0),
 	)
 
-	return drawLinesLeft(layout, screen, strings.Split(graph, "\n"), y, styles.Normal)
+	return drawLinesLeft(layout, screen, strings.Split(graph, "\n"), y, styles.Graph)
 }
 
 func showMinimumScreenSizeMessage(screen tcell.Screen, layout Layout, styles Styles) {
@@ -206,5 +207,5 @@ func showMinimumScreenSizeMessage(screen tcell.Screen, layout Layout, styles Sty
 	if textWidth(message) > layout.ContentWidth {
 		message = fmt.Sprintf("Resize to %dx%d", MinScreenWidth, MinScreenHeight)
 	}
-	drawLines(layout, screen, []string{message}, max(layout.ScreenHeight/2, 0), styles.Normal)
+	drawLines(layout, screen, []string{message}, max(layout.ScreenHeight/2, 0), styles.Error)
 }

@@ -120,7 +120,6 @@ func drawCursor(screen tcell.Screen, gameState *GameState) {
 	}
 
 	cell := gameState.Cells[gameState.CursorIndex]
-	ui.DrawCursorCell(screen, cell, gameState.Styles)
 	screen.ShowCursor(cell.X, cell.Y)
 }
 
