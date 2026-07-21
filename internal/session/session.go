@@ -20,7 +20,7 @@ type Session struct {
 
 func New(cfg config.Config, log *slog.Logger) (*Session, error) {
 	if log != nil {
-		log.Info("Starting ktype", "wordCount", cfg.Challenge.Words, "language", cfg.Challenge.Language, "quoteMode", cfg.Challenge.Quote)
+		log.Info("Starting ktype", "wordCount", cfg.Challenge.Words, "source", cfg.Challenge.Source, "quoteMode", cfg.Challenge.Quote)
 	}
 
 	styles, err := ui.NewStyles(cfg.Theme)

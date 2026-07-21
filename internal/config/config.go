@@ -10,9 +10,9 @@ import (
 )
 
 type ChallengeConfig struct {
-	Words    int    `mapstructure:"words"`
-	Language string `mapstructure:"language"`
-	Quote    bool   `mapstructure:"quote"`
+	Words  int    `mapstructure:"words"`
+	Source string `mapstructure:"source"`
+	Quote  bool   `mapstructure:"quote"`
 }
 
 type LogsConfig struct {
@@ -43,7 +43,7 @@ var Cfg Config
 
 func InitConfig() error {
 	viper.SetDefault("challenge.words", 25)
-	viper.SetDefault("challenge.language", "english")
+	viper.SetDefault("challenge.source", "english")
 	viper.SetDefault("challenge.quote", false)
 	viper.SetDefault("logs.enabled", false)
 	viper.SetDefault("theme.normal", "#a9b1d6")

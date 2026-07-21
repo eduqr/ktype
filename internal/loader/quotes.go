@@ -22,12 +22,12 @@ type QuoteList struct {
 //go:embed data/quotes/*
 var quotesContent embed.FS
 
-func loadQuote(language string) (Quote, error) {
-	filename := fmt.Sprintf("data/quotes/%s.json", language)
+func loadQuote(source string) (Quote, error) {
+	filename := fmt.Sprintf("data/quotes/%s.json", source)
 
 	byteValue, err := quotesContent.ReadFile(filename)
 	if err != nil {
-		return Quote{}, fmt.Errorf("language not found: %s", language)
+		return Quote{}, fmt.Errorf("source not found: %s", source)
 	}
 
 	var quoteList QuoteList

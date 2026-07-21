@@ -15,12 +15,12 @@ type WordList struct {
 //go:embed data/words/*
 var wordsContent embed.FS
 
-func loadWords(language string, count int) ([]string, error) {
-	filename := fmt.Sprintf("data/words/%s.json", language)
+func loadWords(source string, count int) ([]string, error) {
+	filename := fmt.Sprintf("data/words/%s.json", source)
 
 	byteValue, err := wordsContent.ReadFile(filename)
 	if err != nil {
-		return nil, fmt.Errorf("language not found: %s", language)
+		return nil, fmt.Errorf("source not found: %s", source)
 	}
 
 	var list WordList
