@@ -41,6 +41,15 @@ type Config struct {
 
 var Cfg Config
 
+func Dir() (string, error) {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", fmt.Errorf("cannot determine config directory: %w", err)
+	}
+
+	return filepath.Join(configDir, "ktype"), nil
+}
+
 func InitConfig() error {
 	viper.SetDefault("challenge.words", 25)
 	viper.SetDefault("challenge.source", "english")
@@ -58,15 +67,22 @@ func InitConfig() error {
 	viper.SetDefault("theme.actions", "#565f89")
 	viper.SetDefault("theme.error", "#f7768e")
 
-	configDir, err := os.UserConfigDir()
+	ktypeDir, err := Dir()
 	if err != nil {
-		return fmt.Errorf("cannot determine config directory: %w", err)
+		return err
 	}
-	ktypeDir := filepath.Join(configDir, "ktype")
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(ktypeDir)
+
+	if err := os.MkdirAll(filepath.Join(ktypeDir, "words"), 0755); err != nil {
+		return fmt.Errorf("cannot create words directory: %w", err)
+	}
+
+	if err := os.MkdirAll(filepath.Join(ktypeDir, "quotes"), 0755); err != nil {
+		return fmt.Errorf("cannot create quotes directory: %w", err)
+	}
 
 	if err := viper.ReadInConfig(); err != nil {
 		var notFound viper.ConfigFileNotFoundError
