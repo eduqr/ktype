@@ -21,44 +21,39 @@ type Sources struct {
 	Quotes []Source
 }
 
-func ListSources() {
+func ListSources() (Sources, error) {
 	ktypeDir, err := config.Dir()
 	if err != nil {
-		fmt.Println("getting config directory:", err)
-		return
+		return Sources{}, fmt.Errorf("get config directory: %w", err)
 	}
 
 	var result Sources
 
 	wordSources, err := getEmbeddedEntries(wordsContent, "data/words", "built-in")
 	if err != nil {
-		fmt.Println("getting built-in word sources:", err)
-		return
+		return Sources{}, fmt.Errorf("get built-in word sources: %w", err)
 	}
 	result.Words = wordSources
 
 	customWordSources, err := getEntries(filepath.Join(ktypeDir, "words"), "custom")
 	if err != nil {
-		fmt.Println("getting custom word sources:", err)
-		return
+		return Sources{}, fmt.Errorf("get custom word sources: %w", err)
 	}
 	result.Words = append(result.Words, markOverrides(wordSources, customWordSources)...)
 
 	quoteSources, err := getEmbeddedEntries(quotesContent, "data/quotes", "built-in")
 	if err != nil {
-		fmt.Println("getting built-in quote sources:", err)
-		return
+		return Sources{}, fmt.Errorf("get built-in quote sources: %w", err)
 	}
 	result.Quotes = quoteSources
 
 	customQuoteSources, err := getEntries(filepath.Join(ktypeDir, "quotes"), "custom")
 	if err != nil {
-		fmt.Println("getting custom quote sources:", err)
-		return
+		return Sources{}, fmt.Errorf("get custom quote sources: %w", err)
 	}
 	result.Quotes = append(result.Quotes, markOverrides(quoteSources, customQuoteSources)...)
 
-	printSources(result)
+	return result, nil
 }
 
 func getEntries(path, origin string) ([]Source, error) {
@@ -110,45 +105,4 @@ func markOverrides(builtIn, custom []Source) []Source {
 	}
 
 	return custom
-}
-
-func printSources(sources Sources) {
-	width := maxNameLen(sources)
-
-	fmt.Println("Words:")
-	for _, source := range sources.Words {
-		printSource(width, source)
-	}
-
-	fmt.Println("\nQuotes:")
-	for _, source := range sources.Quotes {
-		printSource(width, source)
-	}
-}
-
-func printSource(width int, source Source) {
-	origin := source.Origin
-	if source.Overrides {
-		origin += " (overrides built-in)"
-	}
-
-	fmt.Printf("  %-*s  %s\n", width, source.Name, origin)
-}
-
-func maxNameLen(sources Sources) int {
-	max := 0
-
-	for _, s := range sources.Words {
-		if len(s.Name) > max {
-			max = len(s.Name)
-		}
-	}
-
-	for _, s := range sources.Quotes {
-		if len(s.Name) > max {
-			max = len(s.Name)
-		}
-	}
-
-	return max + 2
 }
