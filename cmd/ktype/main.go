@@ -9,6 +9,7 @@ import (
 
 func main() {
 	config.RootCmd.Run = run
+	config.RootCmd.AddCommand(listCmd)
 
 	if err := config.RootCmd.Execute(); err != nil {
 		fmt.Println(err)
