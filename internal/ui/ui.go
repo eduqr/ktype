@@ -38,6 +38,7 @@ func InitScreen() (tcell.Screen, error) {
 	}
 
 	if err := screen.Init(); err != nil {
+		screen.Fini()
 		return nil, err
 	}
 

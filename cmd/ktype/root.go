@@ -7,16 +7,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func run(cmd *cobra.Command, args []string) {
+func run(cmd *cobra.Command, args []string) error {
 	cfg := config.Cfg
 	log := logger.Setup(cfg.Logs.Enabled)
 
 	session, err := session.New(cfg, log)
 	if err != nil {
-		log.Error("Failed to create session", "error", err)
-		return
+		return err
 	}
 	defer session.Close()
 
-	session.Run()
+	return session.Run()
 }

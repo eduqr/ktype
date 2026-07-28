@@ -59,12 +59,12 @@ func New(cfg config.Config, log *slog.Logger) (*Session, error) {
 	}, nil
 }
 
-func (session *Session) Run() {
+func (session *Session) Run() error {
 	for {
 		result := typer.StartGame(session.screen, &session.gameState)
 
 		if result.Action == typer.ActionQuit {
-			return
+			return nil
 		}
 
 		var redraw func()
@@ -91,12 +91,11 @@ func (session *Session) Run() {
 		case typer.ActionNewChallenge:
 			challenge, err := loader.GenerateChallenge(session.config.Challenge)
 			if err != nil {
-				slog.Error("Failed to generate challenge", "error", err)
-				return
+				return fmt.Errorf("generate new challenge: %w", err)
 			}
 			session.resetRound(challenge)
 		case typer.ActionQuit:
-			return
+			return nil
 		}
 	}
 }
