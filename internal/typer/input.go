@@ -4,6 +4,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/eduqr/ktype/internal/config"
 	"github.com/eduqr/ktype/internal/ui"
 	"github.com/gdamore/tcell/v3"
 )
@@ -19,7 +20,7 @@ const (
 	ActionNewChallenge
 )
 
-func (gs *GameState) handleKey(screen tcell.Screen, ev *tcell.EventKey) Action {
+func (gs *GameState) handleKey(screen tcell.Screen, ev *tcell.EventKey, challengeConfig config.ChallengeConfig) Action {
 	if ev.Key() == tcell.KeyCtrlC {
 		return ActionQuit
 	}
@@ -38,7 +39,7 @@ func (gs *GameState) handleKey(screen tcell.Screen, ev *tcell.EventKey) Action {
 	}
 
 	if ev.Key() == tcell.KeyRune {
-		return gs.handleRune(screen, ev)
+		return gs.handleRune(screen, ev, challengeConfig)
 	}
 
 	return ActionNone
@@ -74,7 +75,7 @@ func (gs *GameState) handleBackspace(screen tcell.Screen) {
 
 const maxOverflow = 20
 
-func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey) Action {
+func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey, challengeConfig config.ChallengeConfig) Action {
 	if gs.IsDone {
 		return ActionDone
 	}

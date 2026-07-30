@@ -3,6 +3,7 @@ package typer
 import (
 	"time"
 
+	"github.com/eduqr/ktype/internal/config"
 	"github.com/eduqr/ktype/internal/stats"
 	"github.com/eduqr/ktype/internal/ui"
 	"github.com/gdamore/tcell/v3"
@@ -42,7 +43,7 @@ func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles, layout
 	}
 }
 
-func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
+func StartGame(screen tcell.Screen, gameState *GameState, challengeConfig config.ChallengeConfig) GameResult {
 	ui.DrawChallenge(screen, gameState.Cells, gameState.Styles)
 	if gameState.layout.IsSupported() {
 		drawCursor(screen, gameState)
@@ -66,7 +67,7 @@ func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 				gameState.relayout(screen)
 				ui.DrawChallenge(screen, gameState.Cells, gameState.Styles)
 			case *tcell.EventKey:
-				action := gameState.handleKey(screen, ev)
+				action := gameState.handleKey(screen, ev, challengeConfig)
 				if action != ActionNone {
 					gameState.stopWPMSampler()
 					return GameResult{

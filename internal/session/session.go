@@ -61,7 +61,7 @@ func New(cfg config.Config, log *slog.Logger) (*Session, error) {
 
 func (session *Session) Run() error {
 	for {
-		result := typer.StartGame(session.screen, &session.gameState)
+		result := typer.StartGame(session.screen, &session.gameState, session.config.Challenge)
 
 		if result.Action == typer.ActionQuit {
 			return nil
