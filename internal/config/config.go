@@ -13,6 +13,7 @@ type ChallengeConfig struct {
 	Words  int    `mapstructure:"words"`
 	Source string `mapstructure:"source"`
 	Quote  bool   `mapstructure:"quote"`
+	StopOn string `mapstructure:"stop_on"`
 }
 
 type LogsConfig struct {
@@ -54,6 +55,7 @@ func InitConfig() error {
 	viper.SetDefault("challenge.words", 25)
 	viper.SetDefault("challenge.source", "english")
 	viper.SetDefault("challenge.quote", false)
+	viper.SetDefault("challenge.stop_on", "off")
 	viper.SetDefault("logs.enabled", false)
 	viper.SetDefault("theme.normal", "#a9b1d6")
 	viper.SetDefault("theme.correct", "#b9f27c")
@@ -97,5 +99,29 @@ func InitConfig() error {
 		}
 	}
 
-	return viper.Unmarshal(&Cfg)
+	if err := viper.Unmarshal(&Cfg); err != nil {
+		return err
+	}
+
+	if err := Cfg.Validate(); err != nil {
+		return fmt.Errorf("invalid config: %w", err)
+	}
+
+	return nil
+}
+
+func (c Config) Validate() error {
+	if err := validateStopOn(c.Challenge.StopOn); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateStopOn(v string) error {
+	switch v {
+	case "off", "word", "letter":
+		return nil
+	default:
+		return fmt.Errorf("challenge.stop_on: must be one of off, word, letter (got %q)", v)
+	}
 }
