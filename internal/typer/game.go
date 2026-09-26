@@ -10,18 +10,19 @@ import (
 )
 
 type GameState struct {
-	Challenge     []string
-	Cells         []ui.Cell
-	Styles        ui.Styles
-	CursorIndex   int
-	Errors        int
-	IsDone        bool
-	OverflowCount int
-	layout        ui.Layout
-	StartTime     time.Time
-	EndTime       time.Time
-	WPMSamples    []float64
-	wpmTicker     *time.Ticker
+	Challenge       []string
+	Cells           []ui.Cell
+	Styles          ui.Styles
+	CursorIndex     int
+	Errors          int
+	IsDone          bool
+	OverflowCount   int
+	WordMaxOverflow int
+	layout          ui.Layout
+	StartTime       time.Time
+	EndTime         time.Time
+	WPMSamples      []float64
+	wpmTicker       *time.Ticker
 }
 
 type GameResult struct {
@@ -33,13 +34,14 @@ type GameResult struct {
 
 func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles, layout ui.Layout) GameState {
 	return GameState{
-		Challenge:   challenge,
-		Cells:       cells,
-		Styles:      styles,
-		CursorIndex: 0,
-		Errors:      0,
-		IsDone:      false,
-		layout:      layout,
+		Challenge:       challenge,
+		Cells:           cells,
+		Styles:          styles,
+		CursorIndex:     0,
+		Errors:          0,
+		IsDone:          false,
+		WordMaxOverflow: 20,
+		layout:          layout,
 	}
 }
 
