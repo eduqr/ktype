@@ -55,6 +55,10 @@ func StartGame(screen tcell.Screen, gameState *GameState, challengeConfig config
 	screen.Show()
 	events := screen.EventQ()
 
+	if challengeConfig.StopOn == "letter" {
+		gameState.WordMaxOverflow = 1
+	}
+
 	for {
 		var wpmTick <-chan time.Time
 		if gameState.wpmTicker != nil {

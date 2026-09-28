@@ -73,8 +73,6 @@ func (gs *GameState) handleBackspace(screen tcell.Screen) {
 	gs.Cells[gs.CursorIndex].State = ui.StatusPending
 }
 
-const maxOverflow = 20
-
 func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey, challengeConfig config.ChallengeConfig) Action {
 	if gs.IsDone {
 		return ActionDone
@@ -90,7 +88,7 @@ func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey, challen
 	}
 
 	if expected == " " && input != " " {
-		if gs.OverflowCount >= maxOverflow {
+		if gs.OverflowCount >= gs.WordMaxOverflow {
 			return ActionNone
 		}
 		overFlowCell := ui.Cell{
