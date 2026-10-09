@@ -13,6 +13,7 @@ type Styles struct {
 	Normal    tcell.Style
 	Correct   tcell.Style
 	Incorrect tcell.Style
+	Missed    tcell.Style
 	Title     tcell.Style
 	Accuracy  tcell.Style
 	WPM       tcell.Style
@@ -35,6 +36,11 @@ func NewStyles(theme config.ThemeConfig) (Styles, error) {
 	}
 
 	incorrectColor, err := resolveThemeColor("theme.incorrect", theme.Incorrect)
+	if err != nil {
+		return Styles{}, err
+	}
+
+	missedColor, err := resolveThemeColor("theme.missed", theme.Missed)
 	if err != nil {
 		return Styles{}, err
 	}
@@ -83,6 +89,7 @@ func NewStyles(theme config.ThemeConfig) (Styles, error) {
 		Normal:    tcell.StyleDefault.Foreground(normalColor).Background(color.Reset),
 		Correct:   tcell.StyleDefault.Foreground(correctColor).Background(color.Reset),
 		Incorrect: tcell.StyleDefault.Foreground(incorrectColor).Background(color.Reset),
+		Missed:    tcell.StyleDefault.Foreground(missedColor).Background(color.Reset),
 		Title:     tcell.StyleDefault.Foreground(titleColor).Background(color.Reset),
 		Accuracy:  tcell.StyleDefault.Foreground(accuracyColor).Background(color.Reset),
 		WPM:       tcell.StyleDefault.Foreground(wpmColor).Background(color.Reset),
@@ -100,6 +107,8 @@ func (styles Styles) CellStyle(state CellStatus) tcell.Style {
 		return styles.Correct
 	case StatusIncorrect:
 		return styles.Incorrect
+	case StatusMissed:
+		return styles.Missed
 	default:
 		return styles.Normal
 	}

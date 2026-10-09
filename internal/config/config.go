@@ -24,6 +24,7 @@ type ThemeConfig struct {
 	Normal    string `mapstructure:"normal"`
 	Correct   string `mapstructure:"correct"`
 	Incorrect string `mapstructure:"incorrect"`
+	Missed    string `mapstructure:"missed"`
 	Title     string `mapstructure:"title"`
 	Accuracy  string `mapstructure:"accuracy"`
 	WPM       string `mapstructure:"wpm"`
@@ -60,6 +61,7 @@ func InitConfig() error {
 	viper.SetDefault("theme.normal", "#a9b1d6")
 	viper.SetDefault("theme.correct", "#b9f27c")
 	viper.SetDefault("theme.incorrect", "#f7768e")
+	viper.SetDefault("theme.missed", "#853F4C")
 	viper.SetDefault("theme.title", "#cfc9c2")
 	viper.SetDefault("theme.accuracy", "#e0af68")
 	viper.SetDefault("theme.wpm", "#7aa2f7")

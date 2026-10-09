@@ -6,14 +6,17 @@ const (
 	StatusPending CellStatus = iota
 	StatusCorrect
 	StatusIncorrect
+	StatusMissed
 )
 
 type Cell struct {
-	X, Y       int
-	Expected   string
-	State      CellStatus
-	WordIndex  int
-	IsOverflow bool
+	X, Y         int
+	Expected     string
+	OverflowChar string
+	State        CellStatus
+	WordIndex    int
+	IsOverflow   bool
+	IsTerminator bool
 }
 
 func BuildCells(challenge []string, layout Layout) []Cell {
@@ -21,21 +24,19 @@ func BuildCells(challenge []string, layout Layout) []Cell {
 
 	for i, word := range challenge {
 		for _, char := range word {
-			cell := Cell{
+			cells = append(cells, Cell{
 				Expected:  string(char),
 				State:     StatusPending,
 				WordIndex: i,
-			}
-			cells = append(cells, cell)
+			})
 		}
-		if i != len(challenge)-1 {
-			cell := Cell{
-				Expected:  " ",
-				State:     StatusPending,
-				WordIndex: i,
-			}
-			cells = append(cells, cell)
-		}
+		// last one = terminator
+		cells = append(cells, Cell{
+			Expected:     " ",
+			State:        StatusPending,
+			WordIndex:    i,
+			IsTerminator: i == len(challenge)-1,
+		})
 	}
 
 	RecalcChallengePositions(cells, layout)

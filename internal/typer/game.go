@@ -16,7 +16,6 @@ type GameState struct {
 	CursorIndex     int
 	Errors          int
 	IsDone          bool
-	OverflowCount   int
 	WordMaxOverflow int
 	layout          ui.Layout
 	StartTime       time.Time
@@ -54,10 +53,6 @@ func StartGame(screen tcell.Screen, gameState *GameState, challengeConfig config
 	}
 	screen.Show()
 	events := screen.EventQ()
-
-	if challengeConfig.StopOn == "letter" {
-		gameState.WordMaxOverflow = 1
-	}
 
 	for {
 		var wpmTick <-chan time.Time
@@ -122,10 +117,6 @@ func (gs *GameState) stopWPMSampler() {
 }
 
 func drawCursor(screen tcell.Screen, gameState *GameState) {
-	if gameState.CursorIndex >= len(gameState.Cells) {
-		return
-	}
-
 	cell := gameState.Cells[gameState.CursorIndex]
 	screen.ShowCursor(cell.X, cell.Y)
 }
@@ -138,7 +129,7 @@ func (gs *GameState) relayout(screen tcell.Screen) {
 func (gs *GameState) countCorrectCells() int {
 	count := 0
 	for _, cell := range gs.Cells {
-		if cell.State == ui.StatusCorrect {
+		if cell.State == ui.StatusCorrect && !cell.IsTerminator {
 			count++
 		}
 	}

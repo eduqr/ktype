@@ -34,7 +34,7 @@ func (gs *GameState) handleKey(screen tcell.Screen, ev *tcell.EventKey, challeng
 	}
 
 	if ev.Key() == tcell.KeyBackspace || ev.Key() == tcell.KeyBackspace2 {
-		gs.handleBackspace(screen)
+		gs.handleBackspace(screen, challengeConfig)
 		return ActionNone
 	}
 
@@ -45,32 +45,46 @@ func (gs *GameState) handleKey(screen tcell.Screen, ev *tcell.EventKey, challeng
 	return ActionNone
 }
 
-func (gs *GameState) handleBackspace(screen tcell.Screen) {
+func (gs *GameState) handleBackspace(screen tcell.Screen, challengeConfig config.ChallengeConfig) {
 	if gs.CursorIndex <= 0 || gs.IsDone {
 		return
 	}
 
-	prevIndex := gs.CursorIndex - 1
+	stopOnMode := challengeConfig.StopOn
 
-	if gs.Cells[prevIndex].IsOverflow {
-		gs.Cells = slices.Delete(gs.Cells, prevIndex, prevIndex+1)
+	// a wrong letter stays under the cursor so we have to clear the cell first
+	if stopOnMode == "letter" && gs.Cells[gs.CursorIndex].State == ui.StatusIncorrect && !gs.Cells[gs.CursorIndex].IsOverflow {
+		gs.Cells[gs.CursorIndex].State = ui.StatusPending
+		ui.DrawCell(screen, gs.Cells[gs.CursorIndex], gs.Styles)
+	}
+
+	if stopOnMode == "letter" && gs.Cells[gs.CursorIndex].IsOverflow {
+		gs.Cells = slices.Delete(gs.Cells, gs.CursorIndex, gs.CursorIndex+1)
 		gs.CursorIndex--
-		gs.OverflowCount--
+		gs.Cells[gs.CursorIndex].State = ui.StatusPending
+		ui.RecalcChallengePositions(gs.Cells, gs.layout)
+		ui.DrawChallenge(screen, gs.Cells, gs.Styles)
+		return
+	}
+
+	if gs.Cells[gs.CursorIndex-1].IsOverflow {
+		gs.Cells = slices.Delete(gs.Cells, gs.CursorIndex-1, gs.CursorIndex)
+		gs.CursorIndex--
 		ui.RecalcChallengePositions(gs.Cells, gs.layout)
 		ui.DrawChallenge(screen, gs.Cells, gs.Styles)
 		return
 	}
 
 	// block crossing into the prev word if it was completed correctly
-	if gs.Cells[gs.CursorIndex].WordIndex != gs.Cells[prevIndex].WordIndex {
+	if gs.Cells[gs.CursorIndex].WordIndex != gs.Cells[gs.CursorIndex-1].WordIndex {
 		if isPrevWordCorrect(gs.Cells, gs.CursorIndex) {
 			return
 		}
 	}
 
-	ui.DrawCell(screen, gs.Cells[gs.CursorIndex], gs.Styles)
 	gs.CursorIndex--
 	gs.Cells[gs.CursorIndex].State = ui.StatusPending
+	ui.DrawCell(screen, gs.Cells[gs.CursorIndex], gs.Styles)
 }
 
 func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey, challengeConfig config.ChallengeConfig) Action {
@@ -81,53 +95,75 @@ func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey, challen
 	input := ev.Str()
 	currentIndex := gs.CursorIndex
 	expected := gs.Cells[currentIndex].Expected
+	stopOnMode := challengeConfig.StopOn
 
 	if gs.StartTime.IsZero() && currentIndex == 0 && input != " " {
 		gs.StartTime = time.Now()
 		gs.startWPMSampler()
 	}
 
-	if expected == " " && input != " " {
-		if gs.OverflowCount >= gs.WordMaxOverflow {
-			return ActionNone
+	if isIndexAtWordStart(gs.Cells, currentIndex) && input == " " {
+		return ActionNone
+	}
+
+	if !isIndexAtWordStart(gs.Cells, currentIndex) && input == " " && stopOnMode == "off" {
+		gs.skipRemainingCells()
+		if gs.CursorIndex >= len(gs.Cells) {
+			return gs.finish()
 		}
-		overFlowCell := ui.Cell{
-			Expected:   input,
-			State:      ui.StatusIncorrect,
-			WordIndex:  gs.Cells[currentIndex].WordIndex,
-			IsOverflow: true,
-		}
-		gs.Cells = slices.Insert(gs.Cells, currentIndex, overFlowCell)
-		gs.OverflowCount++
-		gs.Errors++
+		ui.DrawChallenge(screen, gs.Cells, gs.Styles)
+		return ActionNone
+	}
+
+	if input == " " && stopOnMode == "letter" && gs.Cells[currentIndex].IsOverflow {
+		// the overflow cell is replaced by the real space so both expect " "
+		gs.Cells = slices.Delete(gs.Cells, currentIndex, currentIndex+1)
 		ui.RecalcChallengePositions(gs.Cells, gs.layout)
 		ui.DrawChallenge(screen, gs.Cells, gs.Styles)
-		gs.CursorIndex++
+	}
+
+	// so, we are at the end of a word, we print overflow when the input is not a space or there are errors in the word
+	if expected == " " && (input != " " || currentWordHasErrors(gs.Cells, currentIndex)) {
+		if overflowCountForWord(gs.Cells, currentIndex) >= gs.WordMaxOverflow && stopOnMode != "letter" {
+			return ActionNone
+		}
+
+		if input == " " {
+			input = "_"
+		}
+
+		switch stopOnMode {
+		case "off", "word":
+			gs.appendOverflow(input)
+			gs.CursorIndex++
+		case "letter":
+			gs.setOverflowCell(input)
+		}
+		ui.RecalcChallengePositions(gs.Cells, gs.layout)
+		ui.DrawChallenge(screen, gs.Cells, gs.Styles)
 		return ActionNone
 	}
 
-	if expected == " " && input == " " && gs.OverflowCount > 0 {
+	correct := input == expected
+
+	if !correct && stopOnMode == "letter" {
+		// no index increment to match behaviour
+		gs.Cells[currentIndex].State = ui.StatusIncorrect
+		gs.Errors++
+		ui.DrawChallenge(screen, gs.Cells, gs.Styles)
 		return ActionNone
 	}
-
-	if input == " " && expected != " " {
-		return ActionNone
-	}
-
-	if input == expected {
+	if correct {
 		gs.Cells[currentIndex].State = ui.StatusCorrect
 	} else {
 		gs.Cells[currentIndex].State = ui.StatusIncorrect
 		gs.Errors++
 	}
-
-	ui.DrawCell(screen, gs.Cells[currentIndex], gs.Styles)
 	gs.CursorIndex++
+	ui.DrawChallenge(screen, gs.Cells, gs.Styles)
 
-	if gs.CursorIndex >= len(gs.Cells) {
-		gs.IsDone = true
-		gs.EndTime = time.Now()
-		return ActionDone
+	if gs.Cells[gs.CursorIndex].IsTerminator && !currentWordHasErrors(gs.Cells, currentIndex) {
+		return gs.finish()
 	}
 
 	return ActionNone
@@ -169,6 +205,12 @@ func WaitResultsAction(screen tcell.Screen, redraw func()) Action {
 	}
 }
 
+func (gs *GameState) finish() Action {
+	gs.IsDone = true
+	gs.EndTime = time.Now()
+	return ActionDone
+}
+
 func isPrevWordCorrect(cells []ui.Cell, cursorIndex int) bool {
 	wordIndex := cells[cursorIndex-1].WordIndex
 	for i := cursorIndex - 1; i >= 0 && cells[i].WordIndex == wordIndex; i-- {
@@ -177,4 +219,86 @@ func isPrevWordCorrect(cells []ui.Cell, cursorIndex int) bool {
 		}
 	}
 	return true
+}
+
+func currentWordHasErrors(cells []ui.Cell, cursorIndex int) bool {
+	return wordHasState(cells, cursorIndex, ui.StatusIncorrect) || wordHasState(cells, cursorIndex, ui.StatusMissed)
+
+}
+
+func wordHasState(cells []ui.Cell, cursorIndex int, state ui.CellStatus) bool {
+	wordIndex := cells[cursorIndex].WordIndex
+
+	for i := wordStartIndex(cells, cursorIndex); i < len(cells) && cells[i].WordIndex == wordIndex; i++ {
+		if cells[i].State == state {
+			return true
+		}
+	}
+	return false
+}
+
+func wordStartIndex(cells []ui.Cell, cursorIndex int) int {
+	wordIndex := cells[cursorIndex].WordIndex
+
+	start := cursorIndex
+	for start > 0 && cells[start-1].WordIndex == wordIndex {
+		start--
+	}
+
+	return start
+}
+
+func overflowCountForWord(cells []ui.Cell, cursorIndex int) int {
+	wordIndex := cells[cursorIndex].WordIndex
+	count := 0
+	for i := wordStartIndex(cells, cursorIndex); i < len(cells) && cells[i].WordIndex == wordIndex; i++ {
+		if cells[i].IsOverflow == true {
+			count++
+		}
+	}
+	return count
+}
+
+func isIndexAtWordStart(cells []ui.Cell, cursorIndex int) bool {
+	return cursorIndex == 0 ||
+		cells[cursorIndex-1].WordIndex != cells[cursorIndex].WordIndex
+}
+
+func (gs *GameState) skipRemainingCells() {
+	wordIndex := gs.Cells[gs.CursorIndex].WordIndex
+	skipped := false
+
+	for gs.CursorIndex < len(gs.Cells) && gs.Cells[gs.CursorIndex].WordIndex == wordIndex {
+		if gs.Cells[gs.CursorIndex].Expected == " " {
+			gs.Cells[gs.CursorIndex].State = ui.StatusCorrect
+		} else if gs.Cells[gs.CursorIndex].State == ui.StatusPending {
+			gs.Cells[gs.CursorIndex].State = ui.StatusMissed
+			skipped = true
+		}
+		gs.CursorIndex++
+	}
+
+	if skipped {
+		gs.Errors++
+	}
+}
+
+func (gs *GameState) appendOverflow(input string) {
+	overflowCell := ui.Cell{
+		Expected:     " ", // always space for overflow cells
+		State:        ui.StatusIncorrect,
+		WordIndex:    gs.Cells[gs.CursorIndex].WordIndex,
+		OverflowChar: input,
+		IsOverflow:   true,
+	}
+	gs.Cells = slices.Insert(gs.Cells, gs.CursorIndex, overflowCell)
+	gs.Errors++
+}
+
+func (gs *GameState) setOverflowCell(input string) {
+	if gs.Cells[gs.CursorIndex].IsOverflow {
+		gs.Cells[gs.CursorIndex].OverflowChar = input
+	} else {
+		gs.appendOverflow(input)
+	}
 }

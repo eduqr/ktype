@@ -65,7 +65,16 @@ func DrawChallenge(screen tcell.Screen, cells []Cell, styles Styles) {
 }
 
 func DrawCell(screen tcell.Screen, cell Cell, styles Styles) {
-	screen.Put(cell.X, cell.Y, cell.Expected, styles.CellStyle(cell.State))
+	text := cell.Expected
+	if cell.IsOverflow {
+		text = cell.OverflowChar
+	}
+
+	if cell.IsTerminator {
+		return
+	}
+
+	screen.Put(cell.X, cell.Y, text, styles.CellStyle(cell.State))
 }
 
 func ShowFinalScreen(screen tcell.Screen, styles Styles, stats stats.Stats, samples []float64) {
