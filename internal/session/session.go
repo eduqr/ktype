@@ -52,16 +52,21 @@ func New(cfg config.Config, log *slog.Logger) (*Session, error) {
 		return nil, fmt.Errorf("build cells: no cells produced")
 	}
 
+	rules := typer.Rules{
+		StopOn:          cfg.Challenge.StopOn,
+		MaxWordOverflow: 20,
+	}
+
 	return &Session{
 		screen:    screen,
-		gameState: typer.InitGameState(challenge, cells, styles, layout),
+		gameState: typer.InitGameState(challenge, cells, styles, layout, rules),
 		config:    cfg,
 	}, nil
 }
 
 func (session *Session) Run() error {
 	for {
-		result := typer.StartGame(session.screen, &session.gameState, session.config.Challenge)
+		result := typer.StartGame(session.screen, &session.gameState)
 
 		if result.Action == typer.ActionQuit {
 			return nil
@@ -111,5 +116,5 @@ func (session *Session) Close() {
 func (session *Session) resetRound(challenge []string) {
 	layout := ui.NewLayout(session.screen)
 	cells := ui.BuildCells(challenge, layout)
-	session.gameState = typer.InitGameState(challenge, cells, session.gameState.Styles, layout)
+	session.gameState = typer.InitGameState(challenge, cells, session.gameState.Styles, layout, session.gameState.Rules)
 }

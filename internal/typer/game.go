@@ -3,25 +3,24 @@ package typer
 import (
 	"time"
 
-	"github.com/eduqr/ktype/internal/config"
 	"github.com/eduqr/ktype/internal/stats"
 	"github.com/eduqr/ktype/internal/ui"
 	"github.com/gdamore/tcell/v3"
 )
 
 type GameState struct {
-	Challenge       []string
-	Cells           []ui.Cell
-	Styles          ui.Styles
-	CursorIndex     int
-	Errors          int
-	IsDone          bool
-	WordMaxOverflow int
-	layout          ui.Layout
-	StartTime       time.Time
-	EndTime         time.Time
-	WPMSamples      []float64
-	wpmTicker       *time.Ticker
+	Challenge   []string
+	Cells       []ui.Cell
+	Styles      ui.Styles
+	Rules       Rules
+	CursorIndex int
+	Errors      int
+	IsDone      bool
+	layout      ui.Layout
+	StartTime   time.Time
+	EndTime     time.Time
+	WPMSamples  []float64
+	wpmTicker   *time.Ticker
 }
 
 type GameResult struct {
@@ -31,20 +30,20 @@ type GameResult struct {
 	Action       Action
 }
 
-func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles, layout ui.Layout) GameState {
+func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles, layout ui.Layout, rules Rules) GameState {
 	return GameState{
-		Challenge:       challenge,
-		Cells:           cells,
-		Styles:          styles,
-		CursorIndex:     0,
-		Errors:          0,
-		IsDone:          false,
-		WordMaxOverflow: 20,
-		layout:          layout,
+		Challenge:   challenge,
+		Cells:       cells,
+		Styles:      styles,
+		CursorIndex: 0,
+		Errors:      0,
+		IsDone:      false,
+		Rules:       rules,
+		layout:      layout,
 	}
 }
 
-func StartGame(screen tcell.Screen, gameState *GameState, challengeConfig config.ChallengeConfig) GameResult {
+func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 	drawGame(screen, gameState)
 	events := screen.EventQ()
 
@@ -62,7 +61,7 @@ func StartGame(screen tcell.Screen, gameState *GameState, challengeConfig config
 				gameState.relayout(screen)
 				drawGame(screen, gameState)
 			case *tcell.EventKey:
-				action := gameState.handleKey(ev, challengeConfig)
+				action := gameState.handleKey(ev)
 				if action != ActionNone {
 					gameState.stopWPMSampler()
 					return GameResult{

@@ -20,7 +20,7 @@ const (
 	ActionNewChallenge
 )
 
-func (gs *GameState) handleKey(ev *tcell.EventKey, challengeConfig config.ChallengeConfig) Action {
+func (gs *GameState) handleKey(ev *tcell.EventKey) Action {
 	if ev.Key() == tcell.KeyCtrlC {
 		return ActionQuit
 	}
@@ -34,30 +34,30 @@ func (gs *GameState) handleKey(ev *tcell.EventKey, challengeConfig config.Challe
 	}
 
 	if ev.Key() == tcell.KeyBackspace || ev.Key() == tcell.KeyBackspace2 {
-		gs.handleBackspace(challengeConfig)
+		gs.handleBackspace()
 		return ActionNone
 	}
 
 	if ev.Key() == tcell.KeyRune {
-		return gs.handleRune(ev, challengeConfig)
+		return gs.handleRune(ev)
 	}
 
 	return ActionNone
 }
 
-func (gs *GameState) handleBackspace(challengeConfig config.ChallengeConfig) {
+func (gs *GameState) handleBackspace() {
 	if gs.CursorIndex <= 0 || gs.IsDone {
 		return
 	}
 
-	stopOnMode := challengeConfig.StopOn
+	stopOnMode := gs.Rules.StopOn
 
 	// a wrong letter stays under the cursor so we have to clear the cell first
-	if stopOnMode == "letter" && gs.Cells[gs.CursorIndex].State == ui.StatusIncorrect && !gs.Cells[gs.CursorIndex].IsOverflow {
+	if stopOnMode == config.StopOnLetter && gs.Cells[gs.CursorIndex].State == ui.StatusIncorrect && !gs.Cells[gs.CursorIndex].IsOverflow {
 		gs.Cells[gs.CursorIndex].State = ui.StatusPending
 	}
 
-	if stopOnMode == "letter" && gs.Cells[gs.CursorIndex].IsOverflow {
+	if stopOnMode == config.StopOnLetter && gs.Cells[gs.CursorIndex].IsOverflow {
 		gs.Cells = slices.Delete(gs.Cells, gs.CursorIndex, gs.CursorIndex+1)
 		gs.CursorIndex--
 		gs.Cells[gs.CursorIndex].State = ui.StatusPending
@@ -81,7 +81,7 @@ func (gs *GameState) handleBackspace(challengeConfig config.ChallengeConfig) {
 	gs.Cells[gs.CursorIndex].State = ui.StatusPending
 }
 
-func (gs *GameState) handleRune(ev *tcell.EventKey, challengeConfig config.ChallengeConfig) Action {
+func (gs *GameState) handleRune(ev *tcell.EventKey) Action {
 	if gs.IsDone {
 		return ActionDone
 	}
@@ -89,7 +89,7 @@ func (gs *GameState) handleRune(ev *tcell.EventKey, challengeConfig config.Chall
 	input := ev.Str()
 	currentIndex := gs.CursorIndex
 	expected := gs.Cells[currentIndex].Expected
-	stopOnMode := challengeConfig.StopOn
+	stopOnMode := gs.Rules.StopOn
 
 	if gs.StartTime.IsZero() && currentIndex == 0 && input != " " {
 		gs.StartTime = time.Now()
@@ -100,7 +100,7 @@ func (gs *GameState) handleRune(ev *tcell.EventKey, challengeConfig config.Chall
 		return ActionNone
 	}
 
-	if !isIndexAtWordStart(gs.Cells, currentIndex) && input == " " && stopOnMode == "off" {
+	if !isIndexAtWordStart(gs.Cells, currentIndex) && input == " " && stopOnMode == config.StopOnOff {
 		gs.skipRemainingCells()
 		if gs.CursorIndex >= len(gs.Cells) {
 			return gs.finish()
@@ -108,14 +108,14 @@ func (gs *GameState) handleRune(ev *tcell.EventKey, challengeConfig config.Chall
 		return ActionNone
 	}
 
-	if input == " " && stopOnMode == "letter" && gs.Cells[currentIndex].IsOverflow {
+	if input == " " && stopOnMode == config.StopOnLetter && gs.Cells[currentIndex].IsOverflow {
 		// the overflow cell is replaced by the real space so both expect " "
 		gs.Cells = slices.Delete(gs.Cells, currentIndex, currentIndex+1)
 	}
 
 	// so, we are at the end of a word, we print overflow when the input is not a space or there are errors in the word
 	if expected == " " && (input != " " || currentWordHasErrors(gs.Cells, currentIndex)) {
-		if overflowCountForWord(gs.Cells, currentIndex) >= gs.WordMaxOverflow && stopOnMode != "letter" {
+		if overflowCountForWord(gs.Cells, currentIndex) >= gs.Rules.MaxWordOverflow && stopOnMode != config.StopOnLetter {
 			return ActionNone
 		}
 
@@ -124,10 +124,10 @@ func (gs *GameState) handleRune(ev *tcell.EventKey, challengeConfig config.Chall
 		}
 
 		switch stopOnMode {
-		case "off", "word":
+		case config.StopOnOff, config.StopOnWord:
 			gs.appendOverflow(input)
 			gs.CursorIndex++
-		case "letter":
+		case config.StopOnLetter:
 			gs.setOverflowCell(input)
 		}
 		return ActionNone
@@ -135,7 +135,7 @@ func (gs *GameState) handleRune(ev *tcell.EventKey, challengeConfig config.Chall
 
 	correct := input == expected
 
-	if !correct && stopOnMode == "letter" {
+	if !correct && stopOnMode == config.StopOnLetter {
 		// no index increment to match behaviour
 		gs.Cells[currentIndex].State = ui.StatusIncorrect
 		gs.Errors++

@@ -9,11 +9,19 @@ import (
 	"github.com/spf13/viper"
 )
 
+type StopOn string
+
+const (
+	StopOnOff    StopOn = "off"
+	StopOnWord   StopOn = "word"
+	StopOnLetter StopOn = "letter"
+)
+
 type ChallengeConfig struct {
 	Words  int    `mapstructure:"words"`
 	Source string `mapstructure:"source"`
 	Quote  bool   `mapstructure:"quote"`
-	StopOn string `mapstructure:"stop_on"`
+	StopOn StopOn `mapstructure:"stop_on"`
 }
 
 type LogsConfig struct {
@@ -56,7 +64,7 @@ func InitConfig() error {
 	viper.SetDefault("challenge.words", 25)
 	viper.SetDefault("challenge.source", "english")
 	viper.SetDefault("challenge.quote", false)
-	viper.SetDefault("challenge.stop_on", "off")
+	viper.SetDefault("challenge.stop_on", StopOnOff)
 	viper.SetDefault("logs.enabled", false)
 	viper.SetDefault("theme.normal", "#a9b1d6")
 	viper.SetDefault("theme.correct", "#b9f27c")
@@ -119,9 +127,9 @@ func (c Config) Validate() error {
 	return nil
 }
 
-func validateStopOn(v string) error {
+func validateStopOn(v StopOn) error {
 	switch v {
-	case "off", "word", "letter":
+	case StopOnOff, StopOnWord, StopOnLetter:
 		return nil
 	default:
 		return fmt.Errorf("challenge.stop_on: must be one of off, word, letter (got %q)", v)
