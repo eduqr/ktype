@@ -45,13 +45,7 @@ func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles, layout
 }
 
 func StartGame(screen tcell.Screen, gameState *GameState, challengeConfig config.ChallengeConfig) GameResult {
-	ui.DrawChallenge(screen, gameState.Cells, gameState.Styles)
-	if gameState.layout.IsSupported() {
-		drawCursor(screen, gameState)
-	} else {
-		screen.HideCursor()
-	}
-	screen.Show()
+	drawGame(screen, gameState)
 	events := screen.EventQ()
 
 	for {
@@ -66,9 +60,9 @@ func StartGame(screen tcell.Screen, gameState *GameState, challengeConfig config
 			case *tcell.EventResize:
 				screen.Sync()
 				gameState.relayout(screen)
-				ui.DrawChallenge(screen, gameState.Cells, gameState.Styles)
+				drawGame(screen, gameState)
 			case *tcell.EventKey:
-				action := gameState.handleKey(screen, ev, challengeConfig)
+				action := gameState.handleKey(ev, challengeConfig)
 				if action != ActionNone {
 					gameState.stopWPMSampler()
 					return GameResult{
@@ -78,18 +72,23 @@ func StartGame(screen tcell.Screen, gameState *GameState, challengeConfig config
 						Action:       action,
 					}
 				}
+				drawGame(screen, gameState)
 			}
 		case <-wpmTick:
 			gameState.sampleWPM()
 		}
-
-		if gameState.layout.IsSupported() {
-			drawCursor(screen, gameState)
-		} else {
-			screen.HideCursor()
-		}
-		screen.Show()
 	}
+}
+
+func drawGame(screen tcell.Screen, gameState *GameState) {
+	ui.RecalcChallengePositions(gameState.Cells, gameState.layout)
+	ui.DrawChallenge(screen, gameState.Cells, gameState.Styles)
+	if gameState.layout.IsSupported() {
+		drawCursor(screen, gameState)
+	} else {
+		screen.HideCursor()
+	}
+	screen.Show()
 }
 
 func (gs *GameState) startWPMSampler() {
@@ -123,7 +122,6 @@ func drawCursor(screen tcell.Screen, gameState *GameState) {
 
 func (gs *GameState) relayout(screen tcell.Screen) {
 	gs.layout = ui.NewLayout(screen)
-	ui.RecalcChallengePositions(gs.Cells, gs.layout)
 }
 
 func (gs *GameState) countCorrectCells() int {

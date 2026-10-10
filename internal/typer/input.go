@@ -20,7 +20,7 @@ const (
 	ActionNewChallenge
 )
 
-func (gs *GameState) handleKey(screen tcell.Screen, ev *tcell.EventKey, challengeConfig config.ChallengeConfig) Action {
+func (gs *GameState) handleKey(ev *tcell.EventKey, challengeConfig config.ChallengeConfig) Action {
 	if ev.Key() == tcell.KeyCtrlC {
 		return ActionQuit
 	}
@@ -34,18 +34,18 @@ func (gs *GameState) handleKey(screen tcell.Screen, ev *tcell.EventKey, challeng
 	}
 
 	if ev.Key() == tcell.KeyBackspace || ev.Key() == tcell.KeyBackspace2 {
-		gs.handleBackspace(screen, challengeConfig)
+		gs.handleBackspace(challengeConfig)
 		return ActionNone
 	}
 
 	if ev.Key() == tcell.KeyRune {
-		return gs.handleRune(screen, ev, challengeConfig)
+		return gs.handleRune(ev, challengeConfig)
 	}
 
 	return ActionNone
 }
 
-func (gs *GameState) handleBackspace(screen tcell.Screen, challengeConfig config.ChallengeConfig) {
+func (gs *GameState) handleBackspace(challengeConfig config.ChallengeConfig) {
 	if gs.CursorIndex <= 0 || gs.IsDone {
 		return
 	}
@@ -55,23 +55,18 @@ func (gs *GameState) handleBackspace(screen tcell.Screen, challengeConfig config
 	// a wrong letter stays under the cursor so we have to clear the cell first
 	if stopOnMode == "letter" && gs.Cells[gs.CursorIndex].State == ui.StatusIncorrect && !gs.Cells[gs.CursorIndex].IsOverflow {
 		gs.Cells[gs.CursorIndex].State = ui.StatusPending
-		ui.DrawCell(screen, gs.Cells[gs.CursorIndex], gs.Styles)
 	}
 
 	if stopOnMode == "letter" && gs.Cells[gs.CursorIndex].IsOverflow {
 		gs.Cells = slices.Delete(gs.Cells, gs.CursorIndex, gs.CursorIndex+1)
 		gs.CursorIndex--
 		gs.Cells[gs.CursorIndex].State = ui.StatusPending
-		ui.RecalcChallengePositions(gs.Cells, gs.layout)
-		ui.DrawChallenge(screen, gs.Cells, gs.Styles)
 		return
 	}
 
 	if gs.Cells[gs.CursorIndex-1].IsOverflow {
 		gs.Cells = slices.Delete(gs.Cells, gs.CursorIndex-1, gs.CursorIndex)
 		gs.CursorIndex--
-		ui.RecalcChallengePositions(gs.Cells, gs.layout)
-		ui.DrawChallenge(screen, gs.Cells, gs.Styles)
 		return
 	}
 
@@ -84,10 +79,9 @@ func (gs *GameState) handleBackspace(screen tcell.Screen, challengeConfig config
 
 	gs.CursorIndex--
 	gs.Cells[gs.CursorIndex].State = ui.StatusPending
-	ui.DrawCell(screen, gs.Cells[gs.CursorIndex], gs.Styles)
 }
 
-func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey, challengeConfig config.ChallengeConfig) Action {
+func (gs *GameState) handleRune(ev *tcell.EventKey, challengeConfig config.ChallengeConfig) Action {
 	if gs.IsDone {
 		return ActionDone
 	}
@@ -111,15 +105,12 @@ func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey, challen
 		if gs.CursorIndex >= len(gs.Cells) {
 			return gs.finish()
 		}
-		ui.DrawChallenge(screen, gs.Cells, gs.Styles)
 		return ActionNone
 	}
 
 	if input == " " && stopOnMode == "letter" && gs.Cells[currentIndex].IsOverflow {
 		// the overflow cell is replaced by the real space so both expect " "
 		gs.Cells = slices.Delete(gs.Cells, currentIndex, currentIndex+1)
-		ui.RecalcChallengePositions(gs.Cells, gs.layout)
-		ui.DrawChallenge(screen, gs.Cells, gs.Styles)
 	}
 
 	// so, we are at the end of a word, we print overflow when the input is not a space or there are errors in the word
@@ -139,8 +130,6 @@ func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey, challen
 		case "letter":
 			gs.setOverflowCell(input)
 		}
-		ui.RecalcChallengePositions(gs.Cells, gs.layout)
-		ui.DrawChallenge(screen, gs.Cells, gs.Styles)
 		return ActionNone
 	}
 
@@ -150,7 +139,6 @@ func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey, challen
 		// no index increment to match behaviour
 		gs.Cells[currentIndex].State = ui.StatusIncorrect
 		gs.Errors++
-		ui.DrawChallenge(screen, gs.Cells, gs.Styles)
 		return ActionNone
 	}
 	if correct {
@@ -160,7 +148,6 @@ func (gs *GameState) handleRune(screen tcell.Screen, ev *tcell.EventKey, challen
 		gs.Errors++
 	}
 	gs.CursorIndex++
-	ui.DrawChallenge(screen, gs.Cells, gs.Styles)
 
 	if gs.Cells[gs.CursorIndex].IsTerminator && !currentWordHasErrors(gs.Cells, currentIndex) {
 		return gs.finish()
