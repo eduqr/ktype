@@ -39,7 +39,7 @@ func (gs *GameState) handleKey(ev *tcell.EventKey) Action {
 	}
 
 	if ev.Key() == tcell.KeyRune {
-		return gs.handleRune(ev)
+		return gs.handleRune(ev.Str())
 	}
 
 	return ActionNone
@@ -81,12 +81,11 @@ func (gs *GameState) handleBackspace() {
 	gs.Cells[gs.CursorIndex].State = ui.StatusPending
 }
 
-func (gs *GameState) handleRune(ev *tcell.EventKey) Action {
+func (gs *GameState) handleRune(input string) Action {
 	if gs.IsDone {
 		return ActionDone
 	}
 
-	input := ev.Str()
 	currentIndex := gs.CursorIndex
 	expected := gs.Cells[currentIndex].Expected
 	stopOnMode := gs.Rules.StopOn
