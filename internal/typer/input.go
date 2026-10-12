@@ -53,7 +53,7 @@ func (gs *GameState) handleBackspace() {
 	stopOnMode := gs.Rules.StopOn
 
 	// a wrong letter stays under the cursor so we have to clear the cell first
-	if stopOnMode == config.StopOnLetter && gs.Cells[gs.CursorIndex].State == ui.StatusIncorrect && !gs.Cells[gs.CursorIndex].IsOverflow {
+	if stopOnMode == config.StopOnLetter && gs.Cells[gs.CursorIndex].State == ui.StatusIncorrect && !gs.Cells[gs.CursorIndex].IsOverflow && !isIndexAtWordStart(gs.Cells, gs.CursorIndex) {
 		gs.Cells[gs.CursorIndex].State = ui.StatusPending
 	}
 
