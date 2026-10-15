@@ -208,7 +208,7 @@ func (gs *GameState) handleStopOnOff(input string) Action {
 func (gs *GameState) handleStopOnWord(input string) Action {
 	cell := gs.currentCell()
 
-	if cell.Expected == " " && (input != " " || currentWordHasErrors(gs.Cells, gs.CursorIndex)) {
+	if cell.Expected == " " && (input != " " || wordHasErrors(gs.Cells, gs.CursorIndex)) {
 		if overflowCountForWord(gs.Cells, gs.CursorIndex) >= gs.Rules.MaxWordOverflow {
 			return ActionNone
 		}
@@ -242,7 +242,7 @@ func (gs *GameState) advance(correct bool) Action {
 	}
 
 	// we don't use cell because it got an outdated value
-	if gs.currentCell().IsTerminator && !currentWordHasErrors(gs.Cells, gs.CursorIndex) {
+	if gs.currentCell().IsTerminator && !wordHasErrors(gs.Cells, gs.CursorIndex) {
 		return gs.finish()
 	}
 
@@ -259,16 +259,11 @@ func isPrevWordCorrect(cells []ui.Cell, cursorIndex int) bool {
 	return true
 }
 
-func currentWordHasErrors(cells []ui.Cell, cursorIndex int) bool {
-	return wordHasState(cells, cursorIndex, ui.StatusIncorrect) || wordHasState(cells, cursorIndex, ui.StatusMissed)
-
-}
-
-func wordHasState(cells []ui.Cell, cursorIndex int, state ui.CellStatus) bool {
+func wordHasErrors(cells []ui.Cell, cursorIndex int) bool {
 	wordIndex := cells[cursorIndex].WordIndex
 
 	for i := wordStartIndex(cells, cursorIndex); i < len(cells) && cells[i].WordIndex == wordIndex; i++ {
-		if cells[i].State == state {
+		if cells[i].State == ui.StatusIncorrect || cells[i].State == ui.StatusMissed {
 			return true
 		}
 	}
