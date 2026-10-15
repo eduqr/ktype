@@ -147,12 +147,6 @@ func WaitResultsAction(screen tcell.Screen, redraw func()) Action {
 	}
 }
 
-func (gs *GameState) finish() Action {
-	gs.IsDone = true
-	gs.EndTime = time.Now()
-	return ActionDone
-}
-
 func (gs *GameState) handleStopOnLetter(input string) Action {
 	if input == " " && gs.currentCell().IsOverflow {
 		gs.Cells = slices.Delete(gs.Cells, gs.CursorIndex, gs.CursorIndex+1)

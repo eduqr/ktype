@@ -79,6 +79,12 @@ func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 	}
 }
 
+func (gs *GameState) finish() Action {
+	gs.IsDone = true
+	gs.EndTime = time.Now()
+	return ActionDone
+}
+
 func drawGame(screen tcell.Screen, gameState *GameState) {
 	ui.RecalcChallengePositions(gameState.Cells, gameState.layout)
 	ui.DrawChallenge(screen, gameState.Cells, gameState.Styles)
