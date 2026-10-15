@@ -1,14 +1,12 @@
 package typer
 
 import (
-	"slices"
-
 	"github.com/eduqr/ktype/internal/ui"
 )
 
 func (gs *GameState) handleStopOnLetter(input string) Action {
 	if input == " " && gs.currentCell().IsOverflow {
-		gs.Cells = slices.Delete(gs.Cells, gs.CursorIndex, gs.CursorIndex+1)
+		gs.removeCurrentOverflow()
 	}
 
 	cell := gs.currentCell()
@@ -46,7 +44,7 @@ func (gs *GameState) handleStopOnOff(input string) Action {
 
 	// if the input wasn't space then it's overflow
 	if cell.Expected == " " {
-		if overflowCountForWord(gs.Cells, gs.CursorIndex) >= gs.Rules.MaxWordOverflow {
+		if !gs.canAppendOverflow() {
 			return ActionNone
 		}
 
@@ -62,7 +60,7 @@ func (gs *GameState) handleStopOnWord(input string) Action {
 	cell := gs.currentCell()
 
 	if cell.Expected == " " && (input != " " || wordHasErrors(gs.Cells, gs.CursorIndex)) {
-		if overflowCountForWord(gs.Cells, gs.CursorIndex) >= gs.Rules.MaxWordOverflow {
+		if !gs.canAppendOverflow() {
 			return ActionNone
 		}
 

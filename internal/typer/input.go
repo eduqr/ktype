@@ -222,31 +222,3 @@ func isIndexAtWordStart(cells []ui.Cell, cursorIndex int) bool {
 	return cursorIndex == 0 ||
 		cells[cursorIndex-1].WordIndex != cells[cursorIndex].WordIndex
 }
-
-func (gs *GameState) appendOverflow(input string) {
-	overflowCell := ui.Cell{
-		Expected:     " ", // always space for overflow cells
-		State:        ui.StatusIncorrect,
-		WordIndex:    gs.Cells[gs.CursorIndex].WordIndex,
-		OverflowChar: overflowChar(input),
-		IsOverflow:   true,
-	}
-	gs.Cells = slices.Insert(gs.Cells, gs.CursorIndex, overflowCell)
-	gs.Errors++
-}
-
-func (gs *GameState) setOverflowCell(input string) {
-	if gs.Cells[gs.CursorIndex].IsOverflow {
-		gs.Cells[gs.CursorIndex].OverflowChar = overflowChar(input)
-		gs.Errors++
-	} else {
-		gs.appendOverflow(input)
-	}
-}
-
-func overflowChar(input string) string {
-	if input == " " {
-		return "_"
-	}
-	return input
-}
