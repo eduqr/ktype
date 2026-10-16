@@ -39,16 +39,16 @@ func BuildCells(challenge []string, layout Layout) []Cell {
 		})
 	}
 
-	RecalcChallengePositions(cells, layout)
+	recalcChallengePositions(cells, layout)
 	return cells
 }
 
-func RecalcChallengePositions(cells []Cell, layout Layout) {
-	RecalcPositions(cells, layout.Left, 0, layout.ContentWidth)
+func recalcChallengePositions(cells []Cell, layout Layout) {
+	recalcPositions(cells, layout.Left, 0, layout.ContentWidth)
 	lineCount := cellLineCount(cells)
 	startY := challengeStartY(layout, lineCount)
 
-	RecalcPositions(cells, layout.Left, startY, layout.ContentWidth)
+	recalcPositions(cells, layout.Left, startY, layout.ContentWidth)
 }
 
 func cellLineCount(cells []Cell) int {
@@ -89,7 +89,7 @@ func wordGroupLen(cells []Cell, i int) int {
 	return n
 }
 
-func RecalcPositions(cells []Cell, startX, startY, lineWidth int) {
+func recalcPositions(cells []Cell, startX, startY, lineWidth int) {
 	if lineWidth < 1 {
 		lineWidth = 1
 	}

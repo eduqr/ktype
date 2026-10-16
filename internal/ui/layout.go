@@ -44,15 +44,15 @@ func (layout Layout) IsSupported() bool {
 	return layout.ScreenWidth >= MinScreenWidth && layout.ScreenHeight >= MinScreenHeight
 }
 
-func (layout Layout) UseShortTitle() bool {
+func (layout Layout) useShortTitle() bool {
 	return layout.ScreenHeight < 25
 }
 
-func (layout Layout) UseStackedOptions() bool {
+func (layout Layout) useStackedOptions() bool {
 	return layout.ContentWidth < 60
 }
 
-func (layout Layout) CanShowGraph(y int, reservedLines int) bool {
+func (layout Layout) canShowGraph(y int, reservedLines int) bool {
 	const minGraphWidth = 36
 	const minGraphLines = 7
 
@@ -60,21 +60,21 @@ func (layout Layout) CanShowGraph(y int, reservedLines int) bool {
 	return layout.ContentWidth >= minGraphWidth && availableLines >= minGraphLines
 }
 
-func (layout Layout) OptionsLineCount() int {
-	if layout.UseStackedOptions() {
+func (layout Layout) optionsLineCount() int {
+	if layout.useStackedOptions() {
 		return 3
 	}
 	return 1
 }
 
-func (layout Layout) Gap() int {
-	if layout.ScreenHeight < 18 {
+func (layout Layout) gap() int {
+	if layout.ScreenHeight < 20 {
 		return 1
 	}
 	return 2
 }
 
-func (layout Layout) HasRoom(y int, lines int) bool {
+func (layout Layout) hasRoom(y int, lines int) bool {
 	return y+lines <= layout.ScreenHeight
 }
 

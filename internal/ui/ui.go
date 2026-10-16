@@ -50,7 +50,7 @@ func InitScreen() (tcell.Screen, error) {
 	return screen, nil
 }
 
-func DrawChallenge(screen tcell.Screen, cells []Cell, styles Styles) {
+func drawChallenge(screen tcell.Screen, cells []Cell, styles Styles) {
 	screen.Clear()
 	layout := NewLayout(screen)
 	if !layout.IsSupported() {
@@ -60,13 +60,13 @@ func DrawChallenge(screen tcell.Screen, cells []Cell, styles Styles) {
 	}
 
 	for _, cell := range cells {
-		DrawCell(screen, cell, styles)
+		drawCell(screen, cell, styles)
 	}
 }
 
 func DrawGame(screen tcell.Screen, cells []Cell, styles Styles, layout Layout, cursorIndex int) {
-	RecalcChallengePositions(cells, layout)
-	DrawChallenge(screen, cells, styles)
+	recalcChallengePositions(cells, layout)
+	drawChallenge(screen, cells, styles)
 	if layout.IsSupported() {
 		drawCursor(screen, cells[cursorIndex])
 	} else {
@@ -79,7 +79,7 @@ func drawCursor(screen tcell.Screen, cell Cell) {
 	screen.ShowCursor(cell.X, cell.Y)
 }
 
-func DrawCell(screen tcell.Screen, cell Cell, styles Styles) {
+func drawCell(screen tcell.Screen, cell Cell, styles Styles) {
 	text := cell.Expected
 	if cell.IsOverflow {
 		text = cell.OverflowChar
@@ -89,7 +89,7 @@ func DrawCell(screen tcell.Screen, cell Cell, styles Styles) {
 		return
 	}
 
-	screen.Put(cell.X, cell.Y, text, styles.CellStyle(cell.State))
+	screen.Put(cell.X, cell.Y, text, styles.cellStyle(cell.State))
 }
 
 func ShowFinalScreen(screen tcell.Screen, styles Styles, stats stats.Stats, samples []float64) {
@@ -104,7 +104,7 @@ func ShowFinalScreen(screen tcell.Screen, styles Styles, stats stats.Stats, samp
 	}
 
 	y := layout.Top
-	gap := layout.Gap()
+	gap := layout.gap()
 
 	y = drawTitle(screen, layout, y, styles.Title)
 	y += gap
@@ -129,7 +129,7 @@ func ShowAbortRoundScreen(screen tcell.Screen, styles Styles) {
 	}
 
 	y := layout.Top
-	gap := layout.Gap()
+	gap := layout.gap()
 
 	y = drawTitle(screen, layout, y, styles.Title)
 	y += gap
@@ -172,7 +172,7 @@ func drawResults(screen tcell.Screen, layout Layout, y int, stats stats.Stats, s
 }
 
 func showOptions(screen tcell.Screen, layout Layout, y int, styles Styles) int {
-	if layout.UseStackedOptions() {
+	if layout.useStackedOptions() {
 		return drawLinesLeft(layout, screen, finalOptionLines, y, styles.Actions)
 	}
 
@@ -181,7 +181,7 @@ func showOptions(screen tcell.Screen, layout Layout, y int, styles Styles) int {
 }
 
 func drawTitle(screen tcell.Screen, layout Layout, y int, style tcell.Style) int {
-	if layout.UseShortTitle() {
+	if layout.useShortTitle() {
 		return drawLines(layout, screen, shortFinalTitle, y, style)
 	}
 	return drawLines(layout, screen, finalTitleLines, y, style)
@@ -192,17 +192,17 @@ func showAbortRoundMessage(screen tcell.Screen, layout Layout, y int, styles Sty
 }
 
 func showWPMSamples(screen tcell.Screen, layout Layout, y int, styles Styles, samples []float64) int {
-	reservedLines := layout.OptionsLineCount() + layout.Gap()
+	reservedLines := layout.optionsLineCount() + layout.gap()
 
 	if len(samples) < 2 {
-		if !layout.HasRoom(y, reservedLines+1) {
+		if !layout.hasRoom(y, reservedLines+1) {
 			return y
 		}
 		return drawLines(layout, screen, []string{"Not enough data to display the graph"}, y, styles.Error)
 	}
 
-	if !layout.CanShowGraph(y, reservedLines) {
-		if !layout.HasRoom(y, reservedLines+1) {
+	if !layout.canShowGraph(y, reservedLines) {
+		if !layout.hasRoom(y, reservedLines+1) {
 			return y
 		}
 		return drawLines(layout, screen, []string{"Not enough space to display the graph"}, y, styles.Error)

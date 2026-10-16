@@ -101,7 +101,7 @@ func NewStyles(theme config.ThemeConfig) (Styles, error) {
 	}, nil
 }
 
-func (styles Styles) CellStyle(state CellStatus) tcell.Style {
+func (styles Styles) cellStyle(state CellStatus) tcell.Style {
 	switch state {
 	case StatusCorrect:
 		return styles.Correct
