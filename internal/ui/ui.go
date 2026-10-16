@@ -213,12 +213,26 @@ func showWPMSamples(screen tcell.Screen, layout Layout, y int, styles Styles, sa
 		tickCount = len(samples)
 	}
 
+	graphHeight := min(4, len(samples))
+	minimum, maximum := samples[0], samples[0]
+	for _, sample := range samples[1:] {
+		minimum = min(minimum, sample)
+		maximum = max(maximum, sample)
+	}
+	sampleRange := maximum - minimum
+	if sampleRange >= 1 && int(sampleRange) < graphHeight {
+		graphHeight = int(sampleRange)
+	}
+
 	graph := asciigraph.Plot(samples,
-		asciigraph.Height(min(4, len(samples))),
+		asciigraph.Height(graphHeight),
 		asciigraph.Width(max(layout.ContentWidth-6, 10)),
 		asciigraph.XAxisRange(1, float64(len(samples))),
 		asciigraph.XAxisTickCount(tickCount),
 		asciigraph.XAxisValueFormatter(func(v float64) string {
+			return fmt.Sprintf("%.0f", v)
+		}),
+		asciigraph.YAxisValueFormatter(func(v float64) string {
 			return fmt.Sprintf("%.0f", v)
 		}),
 		asciigraph.Precision(0),
