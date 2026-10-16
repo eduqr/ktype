@@ -6,8 +6,9 @@
       "type": "go",
       "request": "launch",
       "mode": "debug",
-      "program": "${workspaceFolder}/cmd/ktype/main.go",
-      "args": ["-logs", "-l", "test"]
+      "program": "${workspaceFolder}/cmd/ktype",
+      "console": "integratedTerminal",
+      "args": ["--logs", "--source", "test"]
     }
   ]
 }
