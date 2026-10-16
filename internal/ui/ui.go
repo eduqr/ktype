@@ -208,10 +208,7 @@ func showWPMSamples(screen tcell.Screen, layout Layout, y int, styles Styles, sa
 		return drawLines(layout, screen, []string{"Not enough space to display the graph"}, y, styles.Error)
 	}
 
-	tickCount := 6
-	if len(samples) <= 10 {
-		tickCount = len(samples)
-	}
+	tickCount := min(6, len(samples))
 
 	graphHeight := min(4, len(samples))
 	minimum, maximum := samples[0], samples[0]
@@ -235,7 +232,6 @@ func showWPMSamples(screen tcell.Screen, layout Layout, y int, styles Styles, sa
 		asciigraph.YAxisValueFormatter(func(v float64) string {
 			return fmt.Sprintf("%.0f", v)
 		}),
-		asciigraph.Precision(0),
 	)
 
 	return drawLinesLeft(layout, screen, strings.Split(graph, "\n"), y, styles.Graph)
