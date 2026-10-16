@@ -4,7 +4,7 @@ import "github.com/gdamore/tcell/v3"
 
 const (
 	MinScreenWidth  = 40
-	MinScreenHeight = 10
+	MinScreenHeight = 15
 )
 
 type Layout struct {
@@ -63,7 +63,7 @@ func (layout Layout) optionsLineCount() int {
 }
 
 func (layout Layout) gap() int {
-	if layout.ScreenHeight < 20 {
+	if layout.ScreenHeight <= 20 {
 		return 1
 	}
 	return 2
