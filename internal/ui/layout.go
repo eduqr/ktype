@@ -19,15 +19,10 @@ func NewLayout(screen tcell.Screen) Layout {
 	width, height := screen.Size()
 
 	contentWidth := min(width-4, 120)
-	if contentWidth < 1 {
-		contentWidth = 1
-	}
+	contentWidth = max(contentWidth, 1)
 
 	left := (width - contentWidth) / 2
-
-	if left < 0 {
-		left = 0
-	}
+	left = max(left, 0)
 
 	top := height / 10
 
@@ -45,7 +40,7 @@ func (layout Layout) IsSupported() bool {
 }
 
 func (layout Layout) useShortTitle() bool {
-	return layout.ScreenHeight < 25
+	return layout.ScreenHeight < 28
 }
 
 func (layout Layout) useStackedOptions() bool {
