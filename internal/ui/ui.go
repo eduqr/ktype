@@ -64,6 +64,21 @@ func DrawChallenge(screen tcell.Screen, cells []Cell, styles Styles) {
 	}
 }
 
+func DrawGame(screen tcell.Screen, cells []Cell, styles Styles, layout Layout, cursorIndex int) {
+	RecalcChallengePositions(cells, layout)
+	DrawChallenge(screen, cells, styles)
+	if layout.IsSupported() {
+		drawCursor(screen, cells[cursorIndex])
+	} else {
+		screen.HideCursor()
+	}
+	screen.Show()
+}
+
+func drawCursor(screen tcell.Screen, cell Cell) {
+	screen.ShowCursor(cell.X, cell.Y)
+}
+
 func DrawCell(screen tcell.Screen, cell Cell, styles Styles) {
 	text := cell.Expected
 	if cell.IsOverflow {

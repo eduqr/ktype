@@ -3,7 +3,6 @@ package typer
 import (
 	"time"
 
-	"github.com/eduqr/ktype/internal/stats"
 	"github.com/eduqr/ktype/internal/ui"
 	"github.com/gdamore/tcell/v3"
 )
@@ -44,7 +43,7 @@ func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles, layout
 }
 
 func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
-	drawGame(screen, gameState)
+	ui.DrawGame(screen, gameState.Cells, gameState.Styles, gameState.layout, gameState.CursorIndex)
 	events := screen.EventQ()
 
 	for {
@@ -59,7 +58,7 @@ func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 			case *tcell.EventResize:
 				screen.Sync()
 				gameState.relayout(screen)
-				drawGame(screen, gameState)
+				ui.DrawGame(screen, gameState.Cells, gameState.Styles, gameState.layout, gameState.CursorIndex)
 			case *tcell.EventKey:
 				action := gameState.handleKey(ev)
 				if action != ActionNone {
@@ -71,7 +70,7 @@ func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 						Action:       action,
 					}
 				}
-				drawGame(screen, gameState)
+				ui.DrawGame(screen, gameState.Cells, gameState.Styles, gameState.layout, gameState.CursorIndex)
 			}
 		case <-wpmTick:
 			gameState.sampleWPM()
@@ -85,56 +84,6 @@ func (gs *GameState) finish() Action {
 	return ActionDone
 }
 
-func drawGame(screen tcell.Screen, gameState *GameState) {
-	ui.RecalcChallengePositions(gameState.Cells, gameState.layout)
-	ui.DrawChallenge(screen, gameState.Cells, gameState.Styles)
-	if gameState.layout.IsSupported() {
-		drawCursor(screen, gameState)
-	} else {
-		screen.HideCursor()
-	}
-	screen.Show()
-}
-
-func (gs *GameState) startWPMSampler() {
-	if gs.wpmTicker != nil {
-		return
-	}
-
-	gs.wpmTicker = time.NewTicker(1 * time.Second)
-}
-
-func (gs *GameState) sampleWPM() {
-	correctCells := gs.countCorrectCells()
-	elapsed := time.Since(gs.StartTime).Seconds()
-	sample := stats.CalculateWPM(correctCells, elapsed)
-	gs.WPMSamples = append(gs.WPMSamples, sample)
-}
-
-func (gs *GameState) stopWPMSampler() {
-	if gs.wpmTicker == nil {
-		return
-	}
-
-	gs.wpmTicker.Stop()
-	gs.wpmTicker = nil
-}
-
-func drawCursor(screen tcell.Screen, gameState *GameState) {
-	cell := gameState.Cells[gameState.CursorIndex]
-	screen.ShowCursor(cell.X, cell.Y)
-}
-
 func (gs *GameState) relayout(screen tcell.Screen) {
 	gs.layout = ui.NewLayout(screen)
-}
-
-func (gs *GameState) countCorrectCells() int {
-	count := 0
-	for _, cell := range gs.Cells {
-		if cell.State == ui.StatusCorrect && !cell.IsTerminator {
-			count++
-		}
-	}
-	return count
 }
