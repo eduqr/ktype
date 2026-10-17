@@ -63,7 +63,7 @@ func (layout Layout) optionsLineCount() int {
 }
 
 func (layout Layout) gap() int {
-	if layout.ScreenHeight <= 20 {
+	if layout.ScreenHeight <= 22 {
 		return 1
 	}
 	return 2
