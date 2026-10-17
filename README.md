@@ -23,6 +23,8 @@ First, install [Go](https://go.dev/dl/) on your machine. Then run:
 go install github.com/eduqr/ktype/cmd/ktype@latest
 ```
 
+If your shell cannot find `ktype` after installation, add Go's binary directory (`$(go env GOPATH)/bin`) to your `PATH`. The exact configuration depends on your operating system and shell.
+
 ## Usage
 
 Use `ktype --help` to view the available options:
