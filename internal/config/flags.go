@@ -7,7 +7,7 @@ import (
 
 var RootCmd = &cobra.Command{
 	Use:           "ktype",
-	Short:         "A CLI typing test",
+	Short:         "Typing test for the terminal",
 	SilenceErrors: true,
 	SilenceUsage:  true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
@@ -16,6 +16,7 @@ var RootCmd = &cobra.Command{
 }
 
 func init() {
+	RootCmd.Flags().BoolP("help", "h", false, "Help for ktype")
 	RootCmd.Flags().IntP("words", "w", 25, "The number of words for the challenge")
 	RootCmd.Flags().StringP("source", "s", "english", "Challenge source")
 	RootCmd.Flags().BoolP("quote", "q", false, "Use a quote instead of random words")

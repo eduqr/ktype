@@ -27,8 +27,8 @@ go install github.com/eduqr/ktype@latest
 
 Use `ktype --help` to view the available options:
 
-```sh
-A CLI typing test
+```
+Typing test for the terminal
 
 Usage:
   ktype [flags]
@@ -38,7 +38,7 @@ Available Commands:
   list        List all ktype sources
 
 Flags:
-  -h, --help            help for ktype
+  -h, --help            Help for ktype
   -q, --quote           Use a quote instead of random words
   -s, --source string   Challenge source (default "english")
   -w, --words int       The number of words for the challenge (default 25)
