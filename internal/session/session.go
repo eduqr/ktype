@@ -2,7 +2,6 @@ package session
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/eduqr/ktype/internal/config"
 	"github.com/eduqr/ktype/internal/loader"
@@ -18,11 +17,7 @@ type Session struct {
 	config    config.Config
 }
 
-func New(cfg config.Config, log *slog.Logger) (*Session, error) {
-	if log != nil {
-		log.Info("Starting ktype", "wordCount", cfg.Challenge.Words, "source", cfg.Challenge.Source, "quoteMode", cfg.Challenge.Quote)
-	}
-
+func New(cfg config.Config) (*Session, error) {
 	styles, err := ui.NewStyles(cfg.Theme)
 	if err != nil {
 		return nil, fmt.Errorf("setup styles: %w", err)
@@ -34,10 +29,6 @@ func New(cfg config.Config, log *slog.Logger) (*Session, error) {
 	}
 	if len(challenge) == 0 {
 		return nil, fmt.Errorf("generate challenge: no words returned")
-	}
-
-	if log != nil {
-		log.Info("Generated challenge", "count", len(challenge), "challenge", challenge)
 	}
 
 	screen, err := ui.InitScreen()

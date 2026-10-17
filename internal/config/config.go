@@ -24,10 +24,6 @@ type ChallengeConfig struct {
 	StopOn StopOn `mapstructure:"stop_on"`
 }
 
-type LogsConfig struct {
-	Enabled bool `mapstructure:"enabled"`
-}
-
 type ThemeConfig struct {
 	Normal    string `mapstructure:"normal"`
 	Correct   string `mapstructure:"correct"`
@@ -45,7 +41,6 @@ type ThemeConfig struct {
 
 type Config struct {
 	Challenge ChallengeConfig `mapstructure:"challenge"`
-	Logs      LogsConfig      `mapstructure:"logs"`
 	Theme     ThemeConfig     `mapstructure:"theme"`
 }
 
@@ -65,7 +60,6 @@ func InitConfig() error {
 	viper.SetDefault("challenge.source", "english")
 	viper.SetDefault("challenge.quote", false)
 	viper.SetDefault("challenge.stop_on", StopOnOff)
-	viper.SetDefault("logs.enabled", false)
 	viper.SetDefault("theme.normal", "#a9b1d6")
 	viper.SetDefault("theme.correct", "#b9f27c")
 	viper.SetDefault("theme.incorrect", "#f7768e")

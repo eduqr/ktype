@@ -39,7 +39,6 @@ Available Commands:
 
 Flags:
   -h, --help            help for ktype
-      --logs            Enable diagnostic logs
   -q, --quote           Use a quote instead of random words
   -s, --source string   Challenge source (default "english")
   -w, --words int       The number of words for the challenge (default 25)
