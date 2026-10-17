@@ -56,22 +56,7 @@ func Dir() (string, error) {
 }
 
 func InitConfig() error {
-	viper.SetDefault("challenge.words", 25)
-	viper.SetDefault("challenge.source", "english")
-	viper.SetDefault("challenge.quote", false)
-	viper.SetDefault("challenge.stop_on", StopOnOff)
-	viper.SetDefault("theme.normal", "#a9b1d6")
-	viper.SetDefault("theme.correct", "#b9f27c")
-	viper.SetDefault("theme.incorrect", "#f7768e")
-	viper.SetDefault("theme.missed", "#853F4C")
-	viper.SetDefault("theme.title", "#cfc9c2")
-	viper.SetDefault("theme.accuracy", "#e0af68")
-	viper.SetDefault("theme.wpm", "#7aa2f7")
-	viper.SetDefault("theme.raw_wpm", "#7dcfff")
-	viper.SetDefault("theme.time", "#bb9af7")
-	viper.SetDefault("theme.graph", "#7aa2f7")
-	viper.SetDefault("theme.actions", "#565f89")
-	viper.SetDefault("theme.error", "#f7768e")
+	setDefaults(viper.GetViper())
 
 	ktypeDir, err := Dir()
 	if err != nil {
@@ -98,7 +83,9 @@ func InitConfig() error {
 		if err := os.MkdirAll(ktypeDir, 0755); err != nil {
 			return fmt.Errorf("cannot create config directory: %w", err)
 		}
-		if err := viper.SafeWriteConfigAs(filepath.Join(ktypeDir, "config.yaml")); err != nil {
+		defaultConfig := viper.New()
+		setDefaults(defaultConfig)
+		if err := defaultConfig.SafeWriteConfigAs(filepath.Join(ktypeDir, "config.yaml")); err != nil {
 			return fmt.Errorf("cannot write default config: %w", err)
 		}
 	}
@@ -112,6 +99,25 @@ func InitConfig() error {
 	}
 
 	return nil
+}
+
+func setDefaults(v *viper.Viper) {
+	v.SetDefault("challenge.words", 25)
+	v.SetDefault("challenge.source", "english")
+	v.SetDefault("challenge.quote", false)
+	v.SetDefault("challenge.stop_on", StopOnOff)
+	v.SetDefault("theme.normal", "#a9b1d6")
+	v.SetDefault("theme.correct", "#b9f27c")
+	v.SetDefault("theme.incorrect", "#f7768e")
+	v.SetDefault("theme.missed", "#853F4C")
+	v.SetDefault("theme.title", "#cfc9c2")
+	v.SetDefault("theme.accuracy", "#e0af68")
+	v.SetDefault("theme.wpm", "#7aa2f7")
+	v.SetDefault("theme.raw_wpm", "#7dcfff")
+	v.SetDefault("theme.time", "#bb9af7")
+	v.SetDefault("theme.graph", "#7aa2f7")
+	v.SetDefault("theme.actions", "#565f89")
+	v.SetDefault("theme.error", "#f7768e")
 }
 
 func (c Config) Validate() error {
