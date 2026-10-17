@@ -10,6 +10,7 @@ import (
 func main() {
 	config.RootCmd.RunE = run
 	config.RootCmd.AddCommand(listCmd)
+	config.RootCmd.AddCommand(versionCmd)
 
 	if err := config.RootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err)

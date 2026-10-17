@@ -37,7 +37,9 @@ Usage:
   ktype [command]
 
 Available Commands:
+  help        Help about any command
   list        List all ktype sources
+  version     Print the ktype version
 
 Flags:
   -h, --help            Help for ktype
