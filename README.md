@@ -20,7 +20,7 @@ ktype is a typing test for the terminal, built with Go and tcell.
 First, install [Go](https://go.dev/dl/) on your machine. Then run:
 
 ```sh
-go install github.com/eduqr/ktype/cmd/ktype@latest
+go install github.com/eduqr/ktype@latest
 ```
 
 If your shell cannot find `ktype` after installation, add Go's binary directory (`$(go env GOPATH)/bin`) to your `PATH`. The exact configuration depends on your operating system and shell.
