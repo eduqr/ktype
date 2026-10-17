@@ -20,7 +20,7 @@ ktype is a typing test for the terminal, built with Go and tcell.
 First, install [Go](https://go.dev/dl/) on your machine. Then run:
 
 ```sh
-go install github.com/eduqr/ktype@latest
+go install github.com/eduqr/ktype/cmd/ktype@latest
 ```
 
 ## Usage
@@ -43,8 +43,6 @@ Flags:
   -s, --source string   Challenge source (default "english")
   -w, --words int       The number of words for the challenge (default 25)
 ```
-
-Note: I recommend using a terminal window that is 100x40.
 
 ### Examples
 
@@ -71,7 +69,13 @@ After a challenge:
 
 ## Configuration
 
-When ktype is installed, a config file is created in the config directory: `$HOME/.config/ktype/config.yaml`
+When ktype is run for the first time, a config file is created in the config directory. The exact location depends on your operating system:
+
+| OS      | Config directory                       | Config file                                       |
+|---------|----------------------------------------|---------------------------------------------------|
+| Linux   | `~/.config/ktype/`                     | `~/.config/ktype/config.yaml`                     |
+| MacOS   | `~/Library/Application Support/ktype/` | `~/Library/Application Support/ktype/config.yaml` |
+| Windows | `%AppData%\ktype\`                     | `%AppData%\ktype\config.yaml`                     |
 
 ```yaml
 challenge:
@@ -157,8 +161,15 @@ Quotes:
 
 You can add custom sources by placing JSON files in the corresponding directory:
 
-- For words: `$HOME/.config/ktype/words/`
-- For quotes: `$HOME/.config/ktype/quotes/`
+- Linux:
+  - Words: `~/.config/ktype/words/`
+  - Quotes: `~/.config/ktype/quotes/`
+- macOS:
+  - Words: `~/Library/Application Support/ktype/words/`
+  - Quotes: `~/Library/Application Support/ktype/quotes/`
+- Windows:
+  - Words: `%AppData%\ktype\words\`
+  - Quotes: `%AppData%\ktype\quotes\`
 
 You can override built-in sources by using the same file name. Custom sources take priority over built-in sources.
 
