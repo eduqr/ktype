@@ -52,6 +52,13 @@ func (gs *GameState) handleBackspace() {
 
 	stopOnMode := gs.Rules.StopOn
 
+	// backspace right after a skip restores the skipped word
+	if stopOnMode == config.StopOnOff &&
+		isIndexAtWordStart(gs.Cells, gs.CursorIndex) &&
+		gs.restoreSkippedWord() {
+		return
+	}
+
 	// a wrong letter stays under the cursor so we have to clear the cell first
 	if stopOnMode == config.StopOnLetter &&
 		gs.Cells[gs.CursorIndex].State == ui.StatusIncorrect &&

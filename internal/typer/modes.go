@@ -87,3 +87,26 @@ func (gs *GameState) skipRemainingCells() {
 
 	gs.Errors++
 }
+
+func (gs *GameState) restoreSkippedWord() bool {
+	previousWord := gs.Cells[gs.CursorIndex-1].WordIndex
+	start := wordStartIndex(gs.Cells, gs.CursorIndex-1)
+	firstMissed := -1
+
+	for i := start; i < gs.CursorIndex && gs.Cells[i].WordIndex == previousWord; i++ {
+		if gs.Cells[i].State == ui.StatusMissed {
+			if firstMissed == -1 {
+				firstMissed = i
+			}
+			gs.Cells[i].State = ui.StatusPending
+		}
+	}
+
+	if firstMissed == -1 {
+		return false
+	}
+
+	gs.Cells[gs.CursorIndex-1].State = ui.StatusPending
+	gs.CursorIndex = firstMissed
+	return true
+}
