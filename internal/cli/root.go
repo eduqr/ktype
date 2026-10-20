@@ -7,7 +7,7 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:           "ktype",
-	Short:         "Typing test for the terminal",
+	Short:         "A minimal typing test for the terminal",
 	SilenceErrors: true,
 	SilenceUsage:  true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {

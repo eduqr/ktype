@@ -1,8 +1,8 @@
 # ktype
 
-ktype is a typing test for the terminal, built with Go and tcell.
-
 (video placeholder)
+
+ktype helps you build speed and accuracy with a distraction-free interface, built with Go and tcell.
 
 ## Features
 
@@ -30,7 +30,7 @@ If your shell cannot find `ktype` after installation, add Go's binary directory 
 Use `ktype --help` to view the available options:
 
 ```
-Typing test for the terminal
+A minimal typing test for the terminal
 
 Usage:
   ktype [flags]
