@@ -21,6 +21,10 @@ type WordList struct {
 var wordsContent embed.FS
 
 func loadWords(source string, count int) ([]string, error) {
+	if count < 0 {
+		return nil, fmt.Errorf("word count must not be negative (got %d)", count)
+	}
+
 	byteValue, err := readWordSource(source)
 	if err != nil {
 		return nil, err

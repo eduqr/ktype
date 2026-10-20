@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -83,10 +84,14 @@ func InitConfig() error {
 		if err := os.MkdirAll(ktypeDir, 0755); err != nil {
 			return fmt.Errorf("cannot create config directory: %w", err)
 		}
-		defaultConfig := viper.New()
-		setDefaults(defaultConfig)
-		if err := defaultConfig.SafeWriteConfigAs(filepath.Join(ktypeDir, "config.yaml")); err != nil {
-			return fmt.Errorf("cannot write default config: %w", err)
+		if err := writeDefaultConfig(filepath.Join(ktypeDir, "config.yaml")); err != nil {
+			return err
+		}
+	} else if configFile, err := os.ReadFile(viper.ConfigFileUsed()); err != nil {
+		return fmt.Errorf("cannot inspect config: %w", err)
+	} else if len(strings.TrimSpace(string(configFile))) == 0 {
+		if err := writeDefaultConfig(viper.ConfigFileUsed()); err != nil {
+			return err
 		}
 	}
 
@@ -98,6 +103,15 @@ func InitConfig() error {
 		return fmt.Errorf("invalid config: %w", err)
 	}
 
+	return nil
+}
+
+func writeDefaultConfig(path string) error {
+	defaultConfig := viper.New()
+	setDefaults(defaultConfig)
+	if err := defaultConfig.WriteConfigAs(path); err != nil {
+		return fmt.Errorf("cannot write default config: %w", err)
+	}
 	return nil
 }
 
@@ -121,6 +135,9 @@ func setDefaults(v *viper.Viper) {
 }
 
 func (c Config) Validate() error {
+	if c.Challenge.Words <= 0 {
+		return fmt.Errorf("challenge.words: must be greater than zero (got %d)", c.Challenge.Words)
+	}
 	if err := validateStopOn(c.Challenge.StopOn); err != nil {
 		return err
 	}
