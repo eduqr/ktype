@@ -43,7 +43,7 @@ func InitScreen() (tcell.Screen, error) {
 	}
 
 	screen.SetStyle(defStyle)
-	screen.DisablePaste()
+	screen.EnablePaste()
 	screen.EnableMouse(tcell.MouseButtonEvents)
 	screen.SetTitle("ktype")
 	screen.Clear()

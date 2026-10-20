@@ -22,11 +22,18 @@ func handleResultsKey(ev *tcell.EventKey) Action {
 }
 
 func WaitResultsAction(screen tcell.Screen, redraw func()) Action {
+	pasting := false
+
 	for {
 		event := <-screen.EventQ()
 
 		switch ev := event.(type) {
+		case *tcell.EventPaste:
+			pasting = ev.Start()
 		case *tcell.EventKey:
+			if pasting {
+				continue
+			}
 			action := handleResultsKey(ev)
 			if action != ActionNone {
 				return action

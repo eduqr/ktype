@@ -45,6 +45,7 @@ func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles, layout
 func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 	ui.DrawGame(screen, gameState.Cells, gameState.Styles, gameState.layout, gameState.CursorIndex)
 	events := screen.EventQ()
+	pasting := false
 
 	for {
 		var wpmTick <-chan time.Time
@@ -55,11 +56,16 @@ func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 		select {
 		case event := <-events:
 			switch ev := event.(type) {
+			case *tcell.EventPaste:
+				pasting = ev.Start()
 			case *tcell.EventResize:
 				screen.Sync()
 				gameState.relayout(screen)
 				ui.DrawGame(screen, gameState.Cells, gameState.Styles, gameState.layout, gameState.CursorIndex)
 			case *tcell.EventKey:
+				if pasting {
+					continue
+				}
 				action := gameState.handleKey(ev)
 				if action != ActionNone {
 					gameState.stopWPMSampler()
