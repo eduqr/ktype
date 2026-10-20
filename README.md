@@ -1,6 +1,6 @@
 # ktype
 
-(video placeholder)
+![ktype demo](./assets/ktype-demo.gif)
 
 ktype helps you build speed and accuracy with a distraction-free interface, built with Go and tcell.
 
