@@ -6,14 +6,26 @@ import (
 	"github.com/eduqr/ktype/internal/config"
 )
 
-func GenerateChallenge(challenge config.ChallengeConfig) ([]string, error) {
+type Challenge struct {
+	Words       []string
+	QuoteSource string
+}
+
+func GenerateChallenge(challenge config.ChallengeConfig) (Challenge, error) {
 	if challenge.Quote {
 		quote, err := loadQuote(challenge.Source)
 		if err != nil {
-			return nil, err
+			return Challenge{}, err
 		}
-		return strings.Fields(quote.Text), nil
+		return Challenge{
+			Words:       strings.Fields(quote.Text),
+			QuoteSource: strings.Join(strings.Fields(quote.Source), " "),
+		}, nil
 	}
 
-	return loadWords(challenge.Source, challenge.Words)
+	words, err := loadWords(challenge.Source, challenge.Words)
+	if err != nil {
+		return Challenge{}, err
+	}
+	return Challenge{Words: words}, nil
 }

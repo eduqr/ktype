@@ -27,7 +27,7 @@ func New(cfg config.Config) (*Session, error) {
 	if err != nil {
 		return nil, fmt.Errorf("generate challenge: %w", err)
 	}
-	if len(challenge) == 0 {
+	if len(challenge.Words) == 0 {
 		return nil, fmt.Errorf("generate challenge: no words returned")
 	}
 
@@ -37,7 +37,7 @@ func New(cfg config.Config) (*Session, error) {
 	}
 
 	layout := ui.NewLayout(screen)
-	cells := ui.BuildCells(challenge, layout)
+	cells := ui.BuildCells(challenge.Words, layout)
 	if len(cells) == 0 {
 		screen.Fini()
 		return nil, fmt.Errorf("build cells: no cells produced")
@@ -50,7 +50,7 @@ func New(cfg config.Config) (*Session, error) {
 
 	return &Session{
 		screen:    screen,
-		gameState: typer.InitGameState(challenge, cells, styles, layout, rules),
+		gameState: typer.InitGameState(challenge.Words, challenge.QuoteSource, cells, styles, layout, rules),
 		config:    cfg,
 	}, nil
 }
@@ -83,13 +83,13 @@ func (session *Session) Run() error {
 
 		switch nextAction {
 		case typer.ActionRepeat:
-			session.resetRound(session.gameState.Challenge)
+			session.resetRound(session.gameState.Challenge, session.gameState.QuoteSource)
 		case typer.ActionNewChallenge:
 			challenge, err := loader.GenerateChallenge(session.config.Challenge)
 			if err != nil {
 				return fmt.Errorf("generate new challenge: %w", err)
 			}
-			session.resetRound(challenge)
+			session.resetRound(challenge.Words, challenge.QuoteSource)
 		case typer.ActionQuit:
 			return nil
 		}
@@ -104,8 +104,8 @@ func (session *Session) Close() {
 	session.screen.Fini()
 }
 
-func (session *Session) resetRound(challenge []string) {
+func (session *Session) resetRound(challenge []string, quoteSource string) {
 	layout := ui.NewLayout(session.screen)
 	cells := ui.BuildCells(challenge, layout)
-	session.gameState = typer.InitGameState(challenge, cells, session.gameState.Styles, layout, session.gameState.Rules)
+	session.gameState = typer.InitGameState(challenge, quoteSource, cells, session.gameState.Styles, layout, session.gameState.Rules)
 }

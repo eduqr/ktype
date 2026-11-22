@@ -65,15 +65,30 @@ func drawChallenge(screen tcell.Screen, cells []Cell, styles Styles) {
 	}
 }
 
-func DrawGame(screen tcell.Screen, cells []Cell, styles Styles, layout Layout, cursorIndex int) {
+func DrawGame(screen tcell.Screen, cells []Cell, quoteSource string, styles Styles, layout Layout, cursorIndex int) {
 	recalcChallengePositions(cells, layout)
 	drawChallenge(screen, cells, styles)
 	if layout.IsSupported() {
+		drawQuoteSource(screen, cells, quoteSource, styles, layout)
 		drawCursor(screen, cells[cursorIndex])
 	} else {
 		screen.HideCursor()
 	}
 	screen.Show()
+}
+
+func drawQuoteSource(screen tcell.Screen, cells []Cell, source string, styles Styles, layout Layout) {
+	const sideMargin = 2
+
+	bottomY := layout.ScreenHeight - 1
+
+	if source == "" || cells[len(cells)-1].Y >= bottomY {
+		return
+	}
+
+	text := truncateText(source, layout.ScreenWidth-2*sideMargin)
+	x := layout.ScreenWidth - sideMargin - textWidth(text)
+	screen.PutStrStyled(x, bottomY, text, styles.Actions)
 }
 
 func drawCursor(screen tcell.Screen, cell Cell) {

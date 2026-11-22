@@ -9,6 +9,7 @@ import (
 
 type GameState struct {
 	Challenge   []string
+	QuoteSource string
 	Cells       []ui.Cell
 	Styles      ui.Styles
 	Rules       Rules
@@ -29,9 +30,10 @@ type GameResult struct {
 	Action       Action
 }
 
-func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles, layout ui.Layout, rules Rules) GameState {
+func InitGameState(challenge []string, quoteSource string, cells []ui.Cell, styles ui.Styles, layout ui.Layout, rules Rules) GameState {
 	return GameState{
 		Challenge:   challenge,
+		QuoteSource: quoteSource,
 		Cells:       cells,
 		Styles:      styles,
 		CursorIndex: 0,
@@ -43,7 +45,7 @@ func InitGameState(challenge []string, cells []ui.Cell, styles ui.Styles, layout
 }
 
 func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
-	ui.DrawGame(screen, gameState.Cells, gameState.Styles, gameState.layout, gameState.CursorIndex)
+	ui.DrawGame(screen, gameState.Cells, gameState.QuoteSource, gameState.Styles, gameState.layout, gameState.CursorIndex)
 	events := screen.EventQ()
 	pasting := false
 
@@ -61,7 +63,7 @@ func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 			case *tcell.EventResize:
 				screen.Sync()
 				gameState.relayout(screen)
-				ui.DrawGame(screen, gameState.Cells, gameState.Styles, gameState.layout, gameState.CursorIndex)
+				ui.DrawGame(screen, gameState.Cells, gameState.QuoteSource, gameState.Styles, gameState.layout, gameState.CursorIndex)
 			case *tcell.EventKey:
 				if pasting {
 					continue
@@ -76,7 +78,7 @@ func StartGame(screen tcell.Screen, gameState *GameState) GameResult {
 						Action:       action,
 					}
 				}
-				ui.DrawGame(screen, gameState.Cells, gameState.Styles, gameState.layout, gameState.CursorIndex)
+				ui.DrawGame(screen, gameState.Cells, gameState.QuoteSource, gameState.Styles, gameState.layout, gameState.CursorIndex)
 			}
 		case <-wpmTick:
 			gameState.sampleWPM()

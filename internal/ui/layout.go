@@ -77,6 +77,14 @@ func textWidth(s string) int {
 	return len([]rune(s))
 }
 
+func truncateText(s string, width int) string {
+	runes := []rune(s)
+	if len(runes) <= width {
+		return s
+	}
+	return string(runes[:width-1]) + "…"
+}
+
 func centerX(layout Layout, text string) int {
 	return layout.Left + max((layout.ContentWidth-textWidth(text))/2, 0)
 }
