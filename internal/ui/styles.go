@@ -10,18 +10,19 @@ import (
 )
 
 type Styles struct {
-	Normal    tcell.Style
-	Correct   tcell.Style
-	Incorrect tcell.Style
-	Missed    tcell.Style
-	Title     tcell.Style
-	Accuracy  tcell.Style
-	WPM       tcell.Style
-	RawWPM    tcell.Style
-	Time      tcell.Style
-	Graph     tcell.Style
-	Actions   tcell.Style
-	Error     tcell.Style
+	Normal      tcell.Style
+	Correct     tcell.Style
+	Incorrect   tcell.Style
+	Missed      tcell.Style
+	Title       tcell.Style
+	Accuracy    tcell.Style
+	WPM         tcell.Style
+	RawWPM      tcell.Style
+	Time        tcell.Style
+	Graph       tcell.Style
+	Actions     tcell.Style
+	QuoteSource tcell.Style
+	Error       tcell.Style
 }
 
 func NewStyles(theme config.ThemeConfig) (Styles, error) {
@@ -80,24 +81,30 @@ func NewStyles(theme config.ThemeConfig) (Styles, error) {
 		return Styles{}, err
 	}
 
+	quoteSourceColor, err := resolveThemeColor("theme.quote_source", theme.QuoteSource)
+	if err != nil {
+		return Styles{}, err
+	}
+
 	errorColor, err := resolveThemeColor("theme.error", theme.Error)
 	if err != nil {
 		return Styles{}, err
 	}
 
 	return Styles{
-		Normal:    tcell.StyleDefault.Foreground(normalColor).Background(color.Reset),
-		Correct:   tcell.StyleDefault.Foreground(correctColor).Background(color.Reset),
-		Incorrect: tcell.StyleDefault.Foreground(incorrectColor).Background(color.Reset),
-		Missed:    tcell.StyleDefault.Foreground(missedColor).Background(color.Reset),
-		Title:     tcell.StyleDefault.Foreground(titleColor).Background(color.Reset),
-		Accuracy:  tcell.StyleDefault.Foreground(accuracyColor).Background(color.Reset),
-		WPM:       tcell.StyleDefault.Foreground(wpmColor).Background(color.Reset),
-		RawWPM:    tcell.StyleDefault.Foreground(rawWPMColor).Background(color.Reset),
-		Time:      tcell.StyleDefault.Foreground(timeColor).Background(color.Reset),
-		Graph:     tcell.StyleDefault.Foreground(graphColor).Background(color.Reset),
-		Actions:   tcell.StyleDefault.Foreground(actionsColor).Background(color.Reset),
-		Error:     tcell.StyleDefault.Foreground(errorColor).Background(color.Reset),
+		Normal:      tcell.StyleDefault.Foreground(normalColor).Background(color.Reset),
+		Correct:     tcell.StyleDefault.Foreground(correctColor).Background(color.Reset),
+		Incorrect:   tcell.StyleDefault.Foreground(incorrectColor).Background(color.Reset),
+		Missed:      tcell.StyleDefault.Foreground(missedColor).Background(color.Reset),
+		Title:       tcell.StyleDefault.Foreground(titleColor).Background(color.Reset),
+		Accuracy:    tcell.StyleDefault.Foreground(accuracyColor).Background(color.Reset),
+		WPM:         tcell.StyleDefault.Foreground(wpmColor).Background(color.Reset),
+		RawWPM:      tcell.StyleDefault.Foreground(rawWPMColor).Background(color.Reset),
+		Time:        tcell.StyleDefault.Foreground(timeColor).Background(color.Reset),
+		Graph:       tcell.StyleDefault.Foreground(graphColor).Background(color.Reset),
+		Actions:     tcell.StyleDefault.Foreground(actionsColor).Background(color.Reset),
+		QuoteSource: tcell.StyleDefault.Foreground(quoteSourceColor).Background(color.Reset).Italic(true),
+		Error:       tcell.StyleDefault.Foreground(errorColor).Background(color.Reset),
 	}, nil
 }
 

@@ -26,18 +26,19 @@ type ChallengeConfig struct {
 }
 
 type ThemeConfig struct {
-	Normal    string `mapstructure:"normal"`
-	Correct   string `mapstructure:"correct"`
-	Incorrect string `mapstructure:"incorrect"`
-	Missed    string `mapstructure:"missed"`
-	Title     string `mapstructure:"title"`
-	Accuracy  string `mapstructure:"accuracy"`
-	WPM       string `mapstructure:"wpm"`
-	RawWPM    string `mapstructure:"raw_wpm"`
-	Time      string `mapstructure:"time"`
-	Graph     string `mapstructure:"graph"`
-	Actions   string `mapstructure:"actions"`
-	Error     string `mapstructure:"error"`
+	Normal      string `mapstructure:"normal"`
+	Correct     string `mapstructure:"correct"`
+	Incorrect   string `mapstructure:"incorrect"`
+	Missed      string `mapstructure:"missed"`
+	Title       string `mapstructure:"title"`
+	Accuracy    string `mapstructure:"accuracy"`
+	WPM         string `mapstructure:"wpm"`
+	RawWPM      string `mapstructure:"raw_wpm"`
+	Time        string `mapstructure:"time"`
+	Graph       string `mapstructure:"graph"`
+	Actions     string `mapstructure:"actions"`
+	QuoteSource string `mapstructure:"quote_source"`
+	Error       string `mapstructure:"error"`
 }
 
 type Config struct {
@@ -131,6 +132,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("theme.time", "#bb9af7")
 	v.SetDefault("theme.graph", "#7aa2f7")
 	v.SetDefault("theme.actions", "#565f89")
+	v.SetDefault("theme.quote_source", "#565f89")
 	v.SetDefault("theme.error", "#f7768e")
 }
 

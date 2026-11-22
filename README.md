@@ -124,6 +124,9 @@ theme:
     # pending char color
     normal: '#a9b1d6'
 
+    # quote source color
+    quote_source: '#565f89'
+
     # raw WPM color at the end of the challenge
     raw_wpm: '#7dcfff'
 

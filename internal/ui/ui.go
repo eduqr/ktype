@@ -88,7 +88,7 @@ func drawQuoteSource(screen tcell.Screen, cells []Cell, source string, styles St
 
 	text := truncateText(source, layout.ScreenWidth-2*sideMargin)
 	x := layout.ScreenWidth - sideMargin - textWidth(text)
-	screen.PutStrStyled(x, bottomY, text, styles.Actions)
+	screen.PutStrStyled(x, bottomY, text, styles.QuoteSource)
 }
 
 func drawCursor(screen tcell.Screen, cell Cell) {
