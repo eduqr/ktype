@@ -62,6 +62,7 @@ Flags:
 
 During a challenge:
 
+- `Ctrl+Backspace`: deletes the current word.
 - `Esc`: aborts the current challenge.
 - `Ctrl+C`: exits ktype.
 

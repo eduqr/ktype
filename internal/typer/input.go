@@ -33,8 +33,18 @@ func (gs *GameState) handleKey(ev *tcell.EventKey) Action {
 		return ActionNone
 	}
 
+	// some terminals send Ctrl+W for Ctrl+Backspace
+	if ev.Key() == tcell.KeyCtrlW {
+		gs.handleDeleteWord()
+		return ActionNone
+	}
+
 	if ev.Key() == tcell.KeyBackspace || ev.Key() == tcell.KeyBackspace2 {
-		gs.handleBackspace()
+		if ev.Modifiers() == tcell.ModCtrl {
+			gs.handleDeleteWord()
+		} else {
+			gs.handleBackspace()
+		}
 		return ActionNone
 	}
 
@@ -43,6 +53,21 @@ func (gs *GameState) handleKey(ev *tcell.EventKey) Action {
 	}
 
 	return ActionNone
+}
+
+func (gs *GameState) handleDeleteWord() {
+	if gs.CursorIndex <= 0 || gs.IsDone {
+		return
+	}
+
+	// at a word start, try to enter the prev word
+	if isIndexAtWordStart(gs.Cells, gs.CursorIndex) {
+		gs.handleBackspace()
+	}
+
+	for !isIndexAtWordStart(gs.Cells, gs.CursorIndex) {
+		gs.handleBackspace()
+	}
 }
 
 func (gs *GameState) handleBackspace() {
